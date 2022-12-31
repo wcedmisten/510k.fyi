@@ -1,0 +1,9 @@
+beautifulsoup4
+PyPDF2
+Pillow
+pytesseract
+pdf2image
+
+graphviz
+progress
+ujson
