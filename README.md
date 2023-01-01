@@ -16,8 +16,14 @@ Device dataset downloaded from: https://open.fda.gov/apis/device/510k/download/
 
 ```
 wget https://download.open.fda.gov/device/510k/device-510k-0001-of-0001.json.zip
-
 unzip device-510k-0001-of-0001.json.zip
+```
+
+Recall dataset downloaded from: https://open.fda.gov/apis/device/recall/download/
+
+```
+wget https://download.open.fda.gov/device/recall/device-recall-0001-of-0001.json.zip
+unzip device-recall-0001-of-0001.json.zip
 ```
 
 Import the JSON data to a SQLite Database

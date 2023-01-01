@@ -144,17 +144,20 @@ def find_predicate_ids(device_id):
 
     pdf_text = get_pdf_text(pdf_filename)
 
-    if len(pdf_text) < 50:
-        print("Scanned PDF found, using OCR instead")
-        pdf_text = get_ocr_text(pdf_filename)
-
     # match = re.findall("[Pp]redicate [Dd]evice.*\n{0,5}.*[k|K|DEN]\d+", pdf_text)
     # print(match)
     match = re.findall("((?:k|K|DEN)\d{6})", pdf_text)
     print(match)
     if not match:
         print("No predicates found in ", pdf_filename)
-        return []
+
+        print("Running OCR")
+        pdf_text = get_ocr_text(pdf_filename)
+
+        match = re.findall("((?:k|K|DEN)\d{6})", pdf_text)
+        print(match)
+        if not match:
+            return []
 
     # match = re.search("[Pp]redicate [Dd]evice.*\n{0,5}.*([k|K|DEN]\d+).*", pdf_text)
     predicates = list(set(match) - set([device_id]))
@@ -164,7 +167,7 @@ def find_predicate_ids(device_id):
 
 
 seen = set()
-device_ids = ["K211954"]
+device_ids = ["K220567"]
 
 tree = {}
 
