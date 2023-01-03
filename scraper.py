@@ -2,12 +2,15 @@ from time import sleep
 from bs4 import BeautifulSoup
 import re
 import urllib3
-import os.path
+import os
 from PyPDF2 import PdfReader
 import shutil
 
 http = urllib3.PoolManager()
 
+
+if not os.path.exists("pdfs"):
+    os.makedirs("pdfs")
 
 def find_summary_pdf(device_id):
     pdf_filename = f"pdfs/{device_id}.pdf"
@@ -15,7 +18,7 @@ def find_summary_pdf(device_id):
         print("Checking website")
         url = f"https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfpmn/pmn.cfm?ID={device_id}"
         response = http.request("GET", url)
-        soup = BeautifulSoup(response.data, features="lxml")
+        soup = BeautifulSoup(response.data, features="html.parser")
 
         summary = soup.find("a", string="Summary")
 
@@ -167,7 +170,7 @@ def find_predicate_ids(device_id):
 
 
 seen = set()
-device_ids = ["K220567"]
+device_ids = ["K211954"]
 
 tree = {}
 

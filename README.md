@@ -1,7 +1,7 @@
-# Install tesseract
+# Install tesseract and graphviz
 
 ```
-sudo apt-get install tesseract-ocr
+sudo apt-get install tesseract-ocr graphviz
 ```
 
 # Install requirements

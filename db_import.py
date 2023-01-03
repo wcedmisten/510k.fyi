@@ -79,7 +79,6 @@ with open("device-recall-0001-of-0001.json") as f:
 
         cur.execute("INSERT INTO recall VALUES(?, ?, ?, ?, ?)", vals)
 
-        print(recall.get("k_numbers", []))
         for k_number in recall.get("k_numbers", []):
             cur.execute("INSERT INTO device_recall VALUES(?, ?)", (id, k_number))
 
