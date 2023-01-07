@@ -11,7 +11,8 @@ cur.execute(
     "date_received TEXT,"
     "generic_name TEXT,"
     "device_name TEXT,"
-    "product_code TEXT);"
+    "product_code TEXT,"
+    "statement_or_summary TEXT);"
 )
 
 cur.execute(
@@ -40,17 +41,18 @@ with open("device-510k-0001-of-0001.json") as f:
 
     bar = Bar("Importing data to sqlite", max=len(data["results"]))
 
-    for recall in data["results"]:
+    for device in data["results"]:
         bar.next()
         vals = (
-            recall.get("k_number"),
-            recall.get("date_received"),
-            recall["openfda"].get("device_name"),
-            recall.get("device_name"),
-            recall.get("product_code"),
+            device.get("k_number"),
+            device.get("date_received"),
+            device["openfda"].get("device_name"),
+            device.get("device_name"),
+            device.get("product_code"),
+            device.get("statement_or_summary"),
         )
 
-        cur.execute("INSERT INTO device VALUES(?, ?, ?, ?, ?)", vals)
+        cur.execute("INSERT INTO device VALUES(?, ?, ?, ?, ?, ?)", vals)
 
     con.commit()
 

@@ -5,17 +5,32 @@ import urllib3
 import os
 from PyPDF2 import PdfReader
 import shutil
+import sqlite3
 
 http = urllib3.PoolManager()
 
+con = sqlite3.connect("devices.db")
+cur = con.cursor()
 
 if not os.path.exists("pdfs"):
     os.makedirs("pdfs")
 
+
 def find_summary_pdf(device_id):
     pdf_filename = f"pdfs/{device_id}.pdf"
     if not os.path.isfile(pdf_filename):
-        print("Checking website")
+        print("Checking database")
+        res = cur.execute("SELECT * FROM device WHERE k_number = ?", (device_id,))
+        row = res.fetchone()
+        if not row:
+            print("No device found in the database")
+            return None
+
+        if row[5] != "Summary":
+            print(row[5])
+            print("No summary is available")
+            return None
+
         url = f"https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfpmn/pmn.cfm?ID={device_id}"
         response = http.request("GET", url)
         soup = BeautifulSoup(response.data, features="html.parser")
@@ -72,11 +87,14 @@ from PIL import Image
 
 # https://www.geeksforgeeks.org/python-reading-contents-of-pdf-using-ocr-optical-character-recognition/
 def get_ocr_text(pdf_filename):
-    # Requires Python 3.6 or higher due to f-strings
-    out_directory = Path("~").expanduser()
-
     # Path of the Input pdf
     PDF_file = Path(pdf_filename)
+
+    text_filename = f"{pdf_filename}.txt"
+    if os.path.isfile(text_filename):
+        print("File already exists, skipping OCR")
+        with open(text_filename, "r", encoding="utf-8") as f:
+            return f.read()
 
     # Store all the pages of the PDF in a variable
     image_file_list = []
@@ -135,6 +153,10 @@ def get_ocr_text(pdf_filename):
             text = text.replace("-\n", "")
 
             pdf_text += text
+
+    with open(text_filename, "w", encoding="utf-8") as f:
+        print(pdf_text)
+        f.write(pdf_text)
 
     return pdf_text
 
