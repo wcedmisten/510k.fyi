@@ -18,23 +18,36 @@ g = graphviz.Digraph("G", filename="510k.gv")
 product_codes = set()
 seen = set()
 
-for child, parents in tree.items():
-    for parent in parents:
-        if child not in seen:
-            res = cur.execute("SELECT * FROM device WHERE k_number = ?", (child,))
-            row = res.fetchone()
+res = cur.execute("SELECT * FROM predicate_graph_edge")
+edges = res.fetchall()
 
-            product_code = row[4]
-            product_codes.add(product_code)
-            seen.add(child)
+print(edges)
 
-        if parent not in seen:
-            res = cur.execute("SELECT * FROM device WHERE k_number = ?", (parent,))
-            row = res.fetchone()
+for parent, child in edges:
+    if child not in seen:
+        seen.add(child)
 
-            product_code = row[4]
-            product_codes.add(product_code)
-            seen.add(parent)
+        res = cur.execute("SELECT * FROM device WHERE k_number = ?", (child,))
+        row = res.fetchone()
+
+        if not row:
+            continue
+
+        product_code = row[4]
+        product_codes.add(product_code)
+
+
+    if parent not in seen:
+        seen.add(parent)
+
+        res = cur.execute("SELECT * FROM device WHERE k_number = ?", (parent,))
+        row = res.fetchone()
+
+        if not row:
+            continue
+
+        product_code = row[4]
+        product_codes.add(product_code)
 
 print(product_codes)
 
@@ -47,7 +60,7 @@ color_mapping = {}
 
 def get_color(product_code: str):
     if not product_code in color_mapping:
-        new_color = colors[len(color_mapping)]
+        new_color = colors[len(color_mapping) % len(colors)]
         color_mapping[product_code] = new_color
 
     return color_mapping[product_code]
@@ -56,6 +69,9 @@ def get_color(product_code: str):
 def add_node(node):
     res = cur.execute("SELECT * FROM device WHERE k_number = ?", (node,))
     row = res.fetchone()
+
+    if not row:
+        return
 
     product_code = row[4]
     date = row[1]
@@ -70,16 +86,15 @@ def add_node(node):
 
 seen = set()
 
-for child, parents in tree.items():
-    for parent in parents:
-        if child not in seen:
-            add_node(child)
-            seen.add(child)
+for parent, child in edges:
+    if child not in seen:
+        add_node(child)
+        seen.add(child)
 
-        if parent not in seen:
-            add_node(parent)
-            seen.add(parent)
-        g.edge(parent, child)
+    if parent not in seen:
+        add_node(parent)
+        seen.add(parent)
+    g.edge(parent, child)
 
 for key, val in color_mapping.items():
     res = cur.execute("SELECT * FROM device WHERE product_code = ?", (key,))

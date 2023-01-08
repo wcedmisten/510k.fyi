@@ -1,3 +1,4 @@
+import datetime
 from time import sleep
 from bs4 import BeautifulSoup
 import re
@@ -12,9 +13,19 @@ http = urllib3.PoolManager()
 con = sqlite3.connect("devices.db")
 cur = con.cursor()
 
+seen_con = sqlite3.connect("seen.db")
+seen_cursor = seen_con.cursor()
+
+seen_cursor.execute(
+    "CREATE TABLE IF NOT EXISTS missing_summaries("
+    "k_number TEXT PRIMARY KEY);"
+)
+
 if not os.path.exists("pdfs"):
     os.makedirs("pdfs")
 
+min_scrape_time = 5
+prev_time = datetime.datetime.now()
 
 def find_summary_pdf(device_id):
     pdf_filename = f"pdfs/{device_id}.pdf"
@@ -31,15 +42,35 @@ def find_summary_pdf(device_id):
             print("No summary is available")
             return None
 
+        res = seen_cursor.execute("SELECT * FROM missing_summaries WHERE k_number = ?", (device_id,))
+        seen_row = res.fetchone()
+
+        # track the missing summaries
+        if seen_row:
+            print("Previously known to have no summary")
+            return None
+
+        global prev_time, min_scrape_time
+
+        time = datetime.datetime.now()
+        diff = (time - prev_time).total_seconds()
+
+        if diff < min_scrape_time:
+            print("sleeping ", min_scrape_time - diff)
+            sleep(min_scrape_time - diff)
+
         url = f"https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfpmn/pmn.cfm?ID={device_id}"
         response = http.request("GET", url)
         soup = BeautifulSoup(response.data, features="html.parser")
+
+        prev_time = datetime.datetime.now()
 
         summary = soup.find("a", string="Summary")
 
         if not summary:
             print("Could not find a summary PDF:")
-            print(url)
+            seen_cursor.execute("INSERT INTO missing_summaries VALUES(?)", (device_id,))
+            seen_con.commit()
             return None
         else:
             return summary.attrs.get("href")
@@ -155,7 +186,6 @@ def get_ocr_text(pdf_filename):
             pdf_text += text
 
     with open(text_filename, "w", encoding="utf-8") as f:
-        print(pdf_text)
         f.write(pdf_text)
 
     return pdf_text
@@ -172,7 +202,6 @@ def find_predicate_ids(device_id):
     # match = re.findall("[Pp]redicate [Dd]evice.*\n{0,5}.*[k|K|DEN]\d+", pdf_text)
     # print(match)
     match = re.findall("((?:k|K|DEN)\d{6})", pdf_text)
-    print(match)
     if not match:
         print("No predicates found in ", pdf_filename)
 
@@ -192,22 +221,31 @@ def find_predicate_ids(device_id):
 
 
 seen = set()
-device_ids = ["K211954"]
 
 tree = {}
 
-while device_ids:
-    id = device_ids.pop()
-    if id not in seen:
-        seen.add(id)
-        print(id)
+res = cur.execute("SELECT k_number FROM device WHERE k_number NOT LIKE 'DEN%' LIMIT 10 OFFSET 10000;")
+rows = res.fetchall()
 
-        predicates = find_predicate_ids(id)
-        tree[id] = predicates
-        device_ids.extend(predicates)
-        sleep(0.3)
+for row in rows:
+    prev_time = datetime.datetime.now()
+    
+    id = row[0]
+    print(id)
 
-import json
+    # skip for now
+    if "DEN" in id:
+        continue
 
-with open("tree.json", "w") as f:
-    json.dump(tree, f)
+    predicates = find_predicate_ids(id)
+    tree[id] = predicates
+
+    for predicate in predicates:
+        # from, to
+        vals = (predicate, id)
+        try:
+            cur.execute("INSERT INTO predicate_graph_edge VALUES(?, ?)", vals)
+        except sqlite3.IntegrityError:
+            None
+
+con.commit()

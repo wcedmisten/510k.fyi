@@ -32,6 +32,15 @@ cur.execute(
     "FOREIGN KEY(k_number) REFERENCES device(k_number));"
 )
 
+cur.execute(
+    "CREATE TABLE IF NOT EXISTS predicate_graph_edge("
+    "node_from TEXT,"
+    "node_to TEXT,"
+    "FOREIGN KEY(node_from) REFERENCES device(k_number),"
+    "FOREIGN KEY(node_to) REFERENCES device(k_number),"
+    "PRIMARY KEY(node_from, node_to));"
+)
+
 from progress.bar import Bar
 
 
