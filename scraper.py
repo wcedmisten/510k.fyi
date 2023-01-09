@@ -7,6 +7,7 @@ import os
 from PyPDF2 import PdfReader
 import shutil
 import sqlite3
+import pytz
 
 http = urllib3.PoolManager()
 
@@ -246,7 +247,7 @@ visiting_hours_start = 23
 visiting_hours_end = 5
 
 for row in rows:
-    current_hour = datetime.datetime.now().time().hour
+    current_hour = datetime.datetime.now(pytz.timezone('US/Eastern')).time().hour
 
     counter = 0
     
@@ -256,10 +257,12 @@ for row in rows:
 
         # print every hour
         if counter == 0:
-            print(datetime.datetime.now().time(), "Still sleeping")
+            print(datetime.datetime.now(pytz.timezone('US/Eastern')).time(), "Still sleeping")
         counter = (counter + 1) % 60
 
-        current_hour = datetime.datetime.now().time().hour
+        current_hour = datetime.datetime.now(pytz.timezone('US/Eastern')).time().hour
+
+    print(current_hour)
     
     id = row[0]
     print(id)
