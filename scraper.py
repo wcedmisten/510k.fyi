@@ -246,9 +246,10 @@ rows = res.fetchall()
 visiting_hours_start = 23
 visiting_hours_end = 5
 
-for row in rows:
-    current_hour = datetime.datetime.now(pytz.timezone('US/Eastern')).time().hour
+device_ids = [rows.pop(0)[0]]
 
+while device_ids:
+    current_hour = datetime.datetime.now(pytz.timezone('US/Eastern')).time().hour
     counter = 0
     
     while current_hour < visiting_hours_start and current_hour > visiting_hours_end:
@@ -262,24 +263,27 @@ for row in rows:
 
         current_hour = datetime.datetime.now(pytz.timezone('US/Eastern')).time().hour
 
-    print(current_hour)
+    if not device_ids:
+        print("Getting new device from database")
+        rows.pop(0)[0]
     
-    id = row[0]
-    print(id)
+    id = device_ids.pop()
+    if id not in seen:
+        seen.add(id)
+        print(id)
 
-    # skip for now
-    if "DEN" in id:
-        continue
+        predicates = find_predicate_ids(id)
 
-    predicates = find_predicate_ids(id)
-    tree[id] = predicates
+        # add the predicate links to the database
+        for predicate in predicates:
+            # from, to
+            vals = (predicate, id)
+            try:
+                cur.execute("INSERT INTO predicate_graph_edge VALUES(?, ?)", vals)
+                con.commit()
+            except sqlite3.IntegrityError:
+                None
 
-    for predicate in predicates:
-        # from, to
-        vals = (predicate, id)
-        try:
-            cur.execute("INSERT INTO predicate_graph_edge VALUES(?, ?)", vals)
-        except sqlite3.IntegrityError:
-            None
+        device_ids.extend(predicates)
 
 con.commit()
