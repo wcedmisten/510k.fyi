@@ -24,8 +24,8 @@ seen_cursor.execute(
 if not os.path.exists("pdfs"):
     os.makedirs("pdfs")
 
-min_scrape_time = 5
-prev_time = datetime.datetime.now()
+min_scrape_time = 30
+prev_time = datetime.datetime.now() - datetime.timedelta(seconds=30)
 
 def find_summary_pdf(device_id):
     pdf_filename = f"pdfs/{device_id}.pdf"
@@ -61,6 +61,10 @@ def find_summary_pdf(device_id):
 
         url = f"https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfpmn/pmn.cfm?ID={device_id}"
         response = http.request("GET", url)
+        if response.status == 403:
+            print("Blocked from scraping!!!!")
+            exit(1)
+
         soup = BeautifulSoup(response.data, features="html.parser")
 
         prev_time = datetime.datetime.now()
@@ -82,10 +86,20 @@ def download_device_pdf(device_id):
     pdf_filename = f"pdfs/{device_id}.pdf"
     if not os.path.isfile(pdf_filename):
         url = find_summary_pdf(device_id)
+        global prev_time
+
+        time = datetime.datetime.now()
+        diff = (time - prev_time).total_seconds()
+
+        if diff < min_scrape_time:
+            print("sleeping ", min_scrape_time - diff)
+            sleep(min_scrape_time - diff)
+
         if url:
             with http.request("GET", url, preload_content=False) as resp, open(
                 pdf_filename, "wb"
             ) as out_file:
+                prev_time = datetime.datetime.now()
                 shutil.copyfileobj(resp, out_file)
             return pdf_filename
         else:
@@ -224,11 +238,28 @@ seen = set()
 
 tree = {}
 
-res = cur.execute("SELECT k_number FROM device WHERE k_number NOT LIKE 'DEN%' LIMIT 10 OFFSET 10000;")
+res = cur.execute("SELECT k_number FROM device WHERE k_number NOT LIKE 'DEN%' AND statement_or_summary = 'Summary' ORDER BY date_received DESC;")
 rows = res.fetchall()
 
+# from https://www.accessdata.fda.gov/robots.txt
+visiting_hours_start = 23
+visiting_hours_end = 5
+
 for row in rows:
-    prev_time = datetime.datetime.now()
+    current_hour = datetime.datetime.now().time().hour
+
+    counter = 0
+    
+    while current_hour < visiting_hours_start and current_hour > visiting_hours_end:
+        # sleep for 1 minute
+        sleep(60)
+
+        # print every hour
+        if counter == 0:
+            print(datetime.datetime.now().time(), "Still sleeping")
+        counter = (counter + 1) % 60
+
+        current_hour = datetime.datetime.now().time().hour
     
     id = row[0]
     print(id)
