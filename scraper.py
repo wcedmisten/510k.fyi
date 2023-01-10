@@ -218,6 +218,8 @@ def find_predicate_ids(device_id):
     # print(match)
     match = re.findall("((?:k|K|DEN)\d{6})", pdf_text)
     if not match:
+        # hack for running on droplet where OCR doesn't work
+        return []
         print("No predicates found in ", pdf_filename)
 
         print("Running OCR")
@@ -263,10 +265,6 @@ while device_ids:
 
         current_hour = datetime.datetime.now(pytz.timezone('US/Eastern')).time().hour
 
-    if not device_ids:
-        print("Getting new device from database")
-        rows.pop(0)[0]
-    
     id = device_ids.pop()
     if id not in seen:
         seen.add(id)
@@ -285,5 +283,9 @@ while device_ids:
                 None
 
         device_ids.extend(predicates)
+
+    if not device_ids:
+        print("Getting new device from database")
+        device_ids = [rows.pop(0)[0]]
 
 con.commit()
