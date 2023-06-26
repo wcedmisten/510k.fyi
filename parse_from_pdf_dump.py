@@ -143,6 +143,8 @@ def get_ocr_text(pdf_filename):
     return pdf_text
 
 
+needs_ocr = []
+
 def find_predicate_ids(device_id):
     pdf_filename = get_pdf_path(device_id)
 
@@ -157,14 +159,8 @@ def find_predicate_ids(device_id):
     if not match:
         # hack for running on droplet where OCR doesn't work
         print("No predicates found in ", pdf_filename)
-
-        print("Running OCR")
-        pdf_text = get_ocr_text(pdf_filename)
-
-        match = re.findall("((?:k|K|DEN)\d{6})", pdf_text)
-        print(match)
-        if not match:
-            return []
+        pdf_text = get_ocr_text(pdf_filename) # TODO: remove this once OCR is tested
+        needs_ocr.append(device_id)
 
     # match = re.search("[Pp]redicate [Dd]evice.*\n{0,5}.*([k|K|DEN]\d+).*", pdf_text)
     predicates = list(set(match) - set([device_id]))
@@ -172,42 +168,51 @@ def find_predicate_ids(device_id):
     print("predicates: ", predicates)
     return predicates
 
-
-res = cur.execute("SELECT node_to FROM predicate_graph_edge;")
-rows = res.fetchall()
-
-seen = set(rows)
-
-tree = {}
-
 res = cur.execute("SELECT k_number FROM device WHERE k_number NOT LIKE 'DEN%' AND statement_or_summary = 'Summary' ORDER BY date_received DESC;")
 rows = res.fetchall()
 
-device_ids = [rows.pop(0)[0]]
+for device_id in [row[0] for row in rows]:
+    print(device_id)
 
-while device_ids:
-    id = device_ids.pop()
-    print(id)
-    if id not in seen:
-        seen.add(id)
-        print(id)
+    predicates = find_predicate_ids(device_id)
 
-        predicates = find_predicate_ids(id)
+    # add the predicate links to the database
+    for predicate in predicates:
+        # from, to
+        vals = (predicate, device_id)
+        try:
+            cur.execute("INSERT INTO predicate_graph_edge VALUES(?, ?)", vals)
+            con.commit()
+        except sqlite3.IntegrityError:
+            None
 
-        # add the predicate links to the database
-        for predicate in predicates:
-            # from, to
-            vals = (predicate, id)
-            try:
-                cur.execute("INSERT INTO predicate_graph_edge VALUES(?, ?)", vals)
-                con.commit()
-            except sqlite3.IntegrityError:
-                None
+print(f"Running OCR for {len(needs_ocr)} files")
 
-        device_ids.extend(predicates)
+for device_id in needs_ocr:
+    pdf_filename = get_pdf_path(device_id)
 
-    if not device_ids:
-        print("Getting new device from database")
-        device_ids = [rows.pop(0)[0]]
+    if not pdf_filename:
+        continue
+    
+    print("Running OCR")
+    pdf_text = get_ocr_text(pdf_filename)
+
+    match = re.findall("((?:k|K|DEN)\d{6})", pdf_text)
+    print(match)
+    if not match:
+        continue
+
+    predicates = list(set(match) - set([device_id]))
+
+    print("predicates: ", predicates)
+    # add the predicate links to the database
+    for predicate in predicates:
+        # from, to
+        vals = (predicate, id)
+        try:
+            cur.execute("INSERT INTO predicate_graph_edge VALUES(?, ?)", vals)
+            con.commit()
+        except sqlite3.IntegrityError:
+            None
 
 con.commit()
