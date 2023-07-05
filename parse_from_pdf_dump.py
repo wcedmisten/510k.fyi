@@ -7,23 +7,12 @@ from PyPDF2 import PdfReader
 import sqlite3
 import pytz
 
-PATH_TO_PDFS = "/home/wcedmisten/Downloads/fda-pdfs/scraper-combined"
+PATH_TO_PDFS = "/home/wcedmisten/Downloads/fda-pdfs-ocr/scraper-combined"
 
 http = urllib3.PoolManager()
 
 con = sqlite3.connect("devices.db")
 cur = con.cursor()
-
-seen_con = sqlite3.connect("seen.db")
-seen_cursor = seen_con.cursor()
-
-seen_cursor.execute(
-    "CREATE TABLE IF NOT EXISTS missing_summaries("
-    "k_number TEXT PRIMARY KEY);"
-)
-
-if not os.path.exists("pdfs"):
-    os.makedirs("pdfs")
 
 def get_pdf_path(device_id):
     pdf_filename = f"{PATH_TO_PDFS}/{device_id}.pdf"
@@ -145,6 +134,9 @@ def get_ocr_text(pdf_filename):
 
 needs_ocr = []
 
+# allow the two most common OCR fails: subbing 0 for O and random spaces in the ID
+k_number_regex = "((?:k|K|DEN)[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O])"
+
 def find_predicate_ids(device_id):
     pdf_filename = get_pdf_path(device_id)
 
@@ -155,14 +147,15 @@ def find_predicate_ids(device_id):
 
     # match = re.findall("[Pp]redicate [Dd]evice.*\n{0,5}.*[k|K|DEN]\d+", pdf_text)
     # print(match)
-    match = re.findall("((?:k|K|DEN)\d{6})", pdf_text)
+    match = re.findall(k_number_regex, pdf_text)
     if not match:
         # hack for running on droplet where OCR doesn't work
         print("No predicates found in ", pdf_filename)
         pdf_text = get_ocr_text(pdf_filename) # TODO: remove this once OCR is tested
         needs_ocr.append(device_id)
 
-    # match = re.search("[Pp]redicate [Dd]evice.*\n{0,5}.*([k|K|DEN]\d+).*", pdf_text)
+    # clean up the bad OCR
+    match = [k.replace(" ", "").replace("O", "0").upper() for k in match]
     predicates = list(set(match) - set([device_id]))
 
     print("predicates: ", predicates)
@@ -170,9 +163,12 @@ def find_predicate_ids(device_id):
 
 res = cur.execute("SELECT k_number FROM device WHERE k_number NOT LIKE 'DEN%' AND statement_or_summary = 'Summary' ORDER BY date_received DESC;")
 rows = res.fetchall()
-
+count = 0
 for device_id in [row[0] for row in rows]:
     print(device_id)
+    count += 1
+
+    print(count, " / ", len(rows))
 
     predicates = find_predicate_ids(device_id)
 
@@ -183,12 +179,14 @@ for device_id in [row[0] for row in rows]:
         try:
             cur.execute("INSERT INTO predicate_graph_edge VALUES(?, ?)", vals)
             con.commit()
-        except sqlite3.IntegrityError:
+        except Exception as e:
             None
 
 print(f"Running OCR for {len(needs_ocr)} files")
-
+count = 0
 for device_id in needs_ocr:
+    print(count, " / ", len(needs_ocr))
+    count += 1
     pdf_filename = get_pdf_path(device_id)
 
     if not pdf_filename:
@@ -197,7 +195,9 @@ for device_id in needs_ocr:
     print("Running OCR")
     pdf_text = get_ocr_text(pdf_filename)
 
-    match = re.findall("((?:k|K|DEN)\d{6})", pdf_text)
+    match = re.findall(k_number_regex, pdf_text)
+    # clean up the bad OCR
+    match = [k.replace(" ", "").replace("O", "0").upper() for k in match]
     print(match)
     if not match:
         continue
@@ -212,7 +212,7 @@ for device_id in needs_ocr:
         try:
             cur.execute("INSERT INTO predicate_graph_edge VALUES(?, ?)", vals)
             con.commit()
-        except sqlite3.IntegrityError:
+        except Exception as e:
             None
 
 con.commit()
