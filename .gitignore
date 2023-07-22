@@ -1,6 +1,5 @@
 pdfs/*
 .vscode
-devices.db
 seen.db
 510k.gv
 510k.gv.pdf
