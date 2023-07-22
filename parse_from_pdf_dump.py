@@ -1,13 +1,14 @@
-import datetime
 from time import sleep
 import re
 import urllib3
 import os
 from PyPDF2 import PdfReader
 import sqlite3
-import pytz
+
 
 PATH_TO_PDFS = "/home/wcedmisten/Downloads/fda-pdfs-ocr/scraper-combined"
+# PATH_TO_PDFS = "/home/wcedmisten/Downloads/test-pdfs"
+
 
 http = urllib3.PoolManager()
 
@@ -166,9 +167,12 @@ rows = res.fetchall()
 count = 0
 for device_id in [row[0] for row in rows]:
     print(device_id)
+    # skip the non-OCR files
+    if not os.path.isfile(f"{PATH_TO_PDFS}/{device_id}.pdf.txt"):
+        continue
     count += 1
 
-    print(count, " / ", len(rows))
+    # print(count, " / ", len(rows))
 
     predicates = find_predicate_ids(device_id)
 
@@ -208,11 +212,11 @@ for device_id in needs_ocr:
     # add the predicate links to the database
     for predicate in predicates:
         # from, to
-        vals = (predicate, id)
+        vals = (predicate, device_id)
         try:
             cur.execute("INSERT INTO predicate_graph_edge VALUES(?, ?)", vals)
             con.commit()
         except Exception as e:
-            None
+            print(e)
 
 con.commit()
