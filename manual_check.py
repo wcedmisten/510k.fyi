@@ -6,6 +6,7 @@ import signal
 import sqlite3
 import subprocess
 import os
+import math
 from PyPDF2 import PdfReader
 
 con = sqlite3.connect("devices.db")
@@ -28,15 +29,11 @@ def good_input(input_str):
 
 def check_for_predicate_description(filename):
     if os.path.isfile(filename + ".txt"):
-        print(f"cat {filename}.txt | grep -i -e equivalent -e predicate -e equivalence -e equivalency -A 5")
         with open (filename + ".txt", "r") as f:
             lines = f.read()
             if "equivalent" in lines or "predicate" in lines or "equivalence" in lines or "equivalency" in lines:
-                print("✅ Found predicate description")
                 return
     else:
-        print(f"cat {filename} | grep -i -e equivalent -e predicate -e equivalence -e equivalency -A 5")
-
         try:
             with open(filename, "rb") as f:
                 pdf = PdfReader(f)
@@ -98,10 +95,15 @@ for edge in missing_edges:
     k_number = edge[0]
     if k_number in seen_files:
         continue
+
+    print(f"{len(seen_files)} / {len(missing_edges)} ({round(len(seen_files) / len(missing_edges) * 100, 5)}%) Completed")
+    nearest_percentage = math.ceil(len(seen_files) / len(missing_edges) * 100)
+    to_nearest_percentage = len(missing_edges) * math.ceil(len(seen_files) / len(missing_edges) * 100) // 100  - len(seen_files)
+    print(f"{to_nearest_percentage} more files to {nearest_percentage}% 🎉")
+    if to_nearest_percentage == 0:
+        print("🎉🎉🎉🎉🎉🎉🎉🎉🎉")
     process_pdf(k_number)
     seen_files.add(k_number)
-
-    print(f"{len(seen_files)} / {len(missing_edges)} Completed")
 
     with open("manually_added_links_new.csv", "w") as f:
         for line in data:
