@@ -53,7 +53,6 @@ def good_input(input_str):
 
 def process_pdf(k_number):
     filename = f"{DOWNLOAD_PATH}/{k_number}.pdf"
-    print(filename)
     if not os.path.isfile(filename) and args.local_pdfs:
         print("Could not find PDF, skipping.")
         data.append(f"{k_number},S\n")
