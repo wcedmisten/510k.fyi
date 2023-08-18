@@ -108,12 +108,14 @@ for edge in missing_edges:
     print(
         f"{len(seen_files)} / {len(missing_edges)} ({round(len(seen_files) / len(missing_edges) * 100, 5)}%) Completed"
     )
-    nearest_percentage = math.ceil(len(seen_files) / len(missing_edges) * 100)
-    to_nearest_percentage = len(missing_edges) * math.ceil(
-        len(seen_files) / len(missing_edges) * 100
-    ) // 100 - len(seen_files)
-    print(f"{to_nearest_percentage} more files to {nearest_percentage}% 🎉")
-    if to_nearest_percentage == 0:
+    nearest_tenth_percentage = (
+        math.ceil(len(seen_files) / len(missing_edges) * 1000) / 10
+    )
+    to_nearest_tenth_percentage = len(missing_edges) * math.ceil(
+        len(seen_files) / len(missing_edges) * 1000
+    ) // 1000 - len(seen_files)
+    print(f"{to_nearest_tenth_percentage} more files to {nearest_tenth_percentage}% 🎉")
+    if to_nearest_tenth_percentage == 0:
         print("🎉🎉🎉🎉🎉🎉🎉🎉🎉")
 
     process_pdf(k_number)
