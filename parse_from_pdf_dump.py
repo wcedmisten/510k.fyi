@@ -6,8 +6,8 @@ from PyPDF2 import PdfReader
 import sqlite3
 
 
-PATH_TO_PDFS = "/home/wcedmisten/Downloads/fda-pdfs-ocr/scraper-combined"
-# PATH_TO_PDFS = "/home/wcedmisten/Downloads/test-pdfs"
+PATH_TO_PDFS = "/home/wcedmisten/Downloads/fda-pdfs/scraper-combined"
+# PATH_TO_PDFS = "/home/wcedmisten/test-pdf"
 
 
 http = urllib3.PoolManager()
@@ -136,7 +136,7 @@ def get_ocr_text(pdf_filename):
 needs_ocr = []
 
 # allow the two most common OCR fails: subbing 0 for O and random spaces in the ID
-k_number_regex = "((?:k|K|DEN)[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O])"
+k_number_regex = "((?:k|K|DEN)\#?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O])"
 
 def find_predicate_ids(device_id):
     pdf_filename = get_pdf_path(device_id)
@@ -149,14 +149,20 @@ def find_predicate_ids(device_id):
     # match = re.findall("[Pp]redicate [Dd]evice.*\n{0,5}.*[k|K|DEN]\d+", pdf_text)
     # print(match)
     match = re.findall(k_number_regex, pdf_text)
-    if not match:
-        # hack for running on droplet where OCR doesn't work
-        print("No predicates found in ", pdf_filename)
-        pdf_text = get_ocr_text(pdf_filename) # TODO: remove this once OCR is tested
-        needs_ocr.append(device_id)
 
     # clean up the bad OCR
-    match = [k.replace(" ", "").replace("O", "0").upper() for k in match]
+    match = [k.replace(" ", "").replace("O", "0").replace("#", "").upper() for k in match]
+
+    if not list(set(match) - set([device_id])):
+        # hack for running on droplet where OCR doesn't work
+        print("No predicates found in ", pdf_filename, "trying OCR")
+        pdf_text = get_ocr_text(pdf_filename) # TODO: remove this once OCR is tested
+        needs_ocr.append(device_id)
+        match = re.findall(k_number_regex, pdf_text)
+
+        # clean up the bad OCR
+        match = [k.replace(" ", "").replace("O", "0").replace("#", "").upper() for k in match]
+
     predicates = list(set(match) - set([device_id]))
 
     print("predicates: ", predicates)
@@ -168,11 +174,11 @@ count = 0
 for device_id in [row[0] for row in rows]:
     print(device_id)
     # skip the non-OCR files
-    if not os.path.isfile(f"{PATH_TO_PDFS}/{device_id}.pdf.txt"):
-        continue
+    # if os.path.isfile(f"{PATH_TO_PDFS}/{device_id}.pdf.txt"):
+    #     continue
     count += 1
 
-    # print(count, " / ", len(rows))
+    print(count, " / ", len(rows))
 
     predicates = find_predicate_ids(device_id)
 
@@ -194,6 +200,7 @@ for device_id in needs_ocr:
     pdf_filename = get_pdf_path(device_id)
 
     if not pdf_filename:
+        print("No PDF found, skipping")
         continue
     
     print("Running OCR")
