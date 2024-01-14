@@ -1,5 +1,5 @@
 beautifulsoup4
-PyPDF2
+pypdf
 Pillow
 pytesseract
 pdf2image

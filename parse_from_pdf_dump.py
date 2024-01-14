@@ -2,8 +2,16 @@ from time import sleep
 import re
 import urllib3
 import os
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 import sqlite3
+
+# Import libraries
+from tempfile import TemporaryDirectory
+from pathlib import Path
+
+import pytesseract
+from pdf2image import convert_from_path
+from PIL import Image
 
 
 PATH_TO_PDFS = "/home/wcedmisten/Downloads/fda-pdfs/scraper-combined"
@@ -30,8 +38,24 @@ def get_pdf_text(pdf_filename):
         try:
             pdf = PdfReader(f)
 
-            for p in range(len(pdf.pages)):
-                page = pdf.pages[p]
+            if pdf.attachments:
+                with TemporaryDirectory() as tempdir:
+                    for name, content_list in pdf.attachments.items():
+                        for i, content in enumerate(content_list):
+                            attachment_tmp_file = f"{tempdir}/{name}-{i}"
+                            with open(attachment_tmp_file, "wb") as fp:
+                                fp.write(content)
+
+                            with open(attachment_tmp_file, "rb") as attachment_file:
+                                attachment_pdf = PdfReader(attachment_file)
+                                for page in attachment_pdf.pages:
+                                    try:
+                                        pdf_text += page.extract_text()
+                                    except Exception as e:
+                                        print("Could not parse attached PDF page")
+                                        print(e)
+
+            for page in pdf.pages:
                 try:
                     pdf_text += page.extract_text()
                 except Exception as e:
@@ -42,15 +66,6 @@ def get_pdf_text(pdf_filename):
             print(e)
 
     return pdf_text
-
-
-# Import libraries
-from tempfile import TemporaryDirectory
-from pathlib import Path
-
-import pytesseract
-from pdf2image import convert_from_path
-from PIL import Image
 
 
 # https://www.geeksforgeeks.org/python-reading-contents-of-pdf-using-ocr-optical-character-recognition/
