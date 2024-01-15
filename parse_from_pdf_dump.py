@@ -151,7 +151,7 @@ def get_ocr_text(pdf_filename):
 needs_ocr = []
 
 # allow the two most common OCR fails: subbing 0 for O and random spaces in the ID
-k_number_regex = "((?:k|K|DEN)\#?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O])"
+k_number_regex = "((?:k|K|DEN)\)?\#?\-?\s?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O]\s?[0-9O])"
 
 def find_predicate_ids(device_id):
     pdf_filename = get_pdf_path(device_id)
@@ -166,7 +166,7 @@ def find_predicate_ids(device_id):
     match = re.findall(k_number_regex, pdf_text)
 
     # clean up the bad OCR
-    match = [k.replace(" ", "").replace("O", "0").replace("#", "").upper() for k in match]
+    match = [re.sub(r"[\s\#\)\-]", '', k).replace("O", "0").upper() for k in match]
 
     if not list(set(match) - set([device_id])):
         # hack for running on droplet where OCR doesn't work
@@ -176,7 +176,7 @@ def find_predicate_ids(device_id):
         match = re.findall(k_number_regex, pdf_text)
 
         # clean up the bad OCR
-        match = [k.replace(" ", "").replace("O", "0").replace("#", "").upper() for k in match]
+        match = [re.sub(r"[\s\#\)\-]", '', k).replace("O", "0").upper() for k in match]
 
     predicates = list(set(match) - set([device_id]))
 
@@ -207,38 +207,38 @@ for device_id in [row[0] for row in rows]:
         except Exception as e:
             None
 
-print(f"Running OCR for {len(needs_ocr)} files")
-count = 0
-for device_id in needs_ocr:
-    print(count, " / ", len(needs_ocr))
-    count += 1
-    pdf_filename = get_pdf_path(device_id)
+# print(f"Running OCR for {len(needs_ocr)} files")
+# count = 0
+# for device_id in needs_ocr:
+#     print(count, " / ", len(needs_ocr))
+#     count += 1
+#     pdf_filename = get_pdf_path(device_id)
 
-    if not pdf_filename:
-        print("No PDF found, skipping")
-        continue
+#     if not pdf_filename:
+#         print("No PDF found, skipping")
+#         continue
     
-    print("Running OCR")
-    pdf_text = get_ocr_text(pdf_filename)
+#     print("Running OCR")
+#     pdf_text = get_ocr_text(pdf_filename)
 
-    match = re.findall(k_number_regex, pdf_text)
-    # clean up the bad OCR
-    match = [k.replace(" ", "").replace("O", "0").upper() for k in match]
-    print(match)
-    if not match:
-        continue
+#     match = re.findall(k_number_regex, pdf_text)
+#     # clean up the bad OCR
+#     match = [k.replace(" ", "").replace("O", "0").upper() for k in match]
+#     print(match)
+#     if not match:
+#         continue
 
-    predicates = list(set(match) - set([device_id]))
+#     predicates = list(set(match) - set([device_id]))
 
-    print("predicates: ", predicates)
-    # add the predicate links to the database
-    for predicate in predicates:
-        # from, to
-        vals = (predicate, device_id)
-        try:
-            cur.execute("INSERT INTO predicate_graph_edge VALUES(?, ?)", vals)
-            con.commit()
-        except Exception as e:
-            print(e)
+#     print("predicates: ", predicates)
+#     # add the predicate links to the database
+#     for predicate in predicates:
+#         # from, to
+#         vals = (predicate, device_id)
+#         try:
+#             cur.execute("INSERT INTO predicate_graph_edge VALUES(?, ?)", vals)
+#             con.commit()
+#         except Exception as e:
+#             print(e)
 
 con.commit()
