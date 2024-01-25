@@ -3,11 +3,16 @@ seen_files = set()
 
 import re
 import signal
+import sqlite3
 import subprocess
 import os
 import math
 
 import argparse
+
+con = sqlite3.connect("devices.db")
+cur = con.cursor()
+
 
 parser = argparse.ArgumentParser(
     prog="Manual PDF Check",
@@ -61,10 +66,21 @@ def process_pdf(k_number):
     if args.local_pdfs:
         process = subprocess.Popen(["evince", filename], shell=False)
 
+    print("======================================")
     print(
         f"https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfpmn/pmn.cfm?ID={k_number}"
     )
     print()
+
+    res = cur.execute("SELECT * FROM device WHERE k_number = ?", [k_number])
+    rows = res.fetchall()
+    row = rows[0]
+
+    print("Date received: ", row[1])
+    print("Code: ",row[4])
+    print("Name: ",row[3])
+
+    print("======================================")
 
     prompt = f"Enter a predicate ID for {k_number}, or press F to finish inputting predicates for this device. Press S if no predicates can be found.\n"
     response = input(prompt)
