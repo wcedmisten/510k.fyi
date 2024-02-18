@@ -44,13 +44,25 @@ args = parser.parse_args()
 
 DOWNLOAD_PATH = args.directory
 
+missing_set = set()
+
+with open("missing_predicates.txt", "r") as f:
+    missing_edges = f.readlines()
+    if args.reversed:
+        missing_edges.reverse()
+
+for edge in missing_edges:
+    missing_set.add(edge.strip())
+
 # read in the old data
 with open("manually_added_links.csv", "r") as f:
     data = f.readlines()
     for line in data:
         target = line.split(",")[0]
-        seen_files.add(target)
+        seen_files.add(target.strip())
 
+print("Set difference")
+print(len(missing_set - seen_files))
 
 def good_input(input_str):
     return input_str == "F" or input_str == "S" or re.match("K\d{6}", input_str)
@@ -111,25 +123,23 @@ def process_pdf(k_number):
             response = input(prompt)
 
 
-with open("missing_predicates.txt", "r") as f:
-    missing_edges = f.readlines()
-    if args.reversed:
-        missing_edges.reverse()
-
 for edge in missing_edges:
     k_number = edge.strip()
     if k_number in seen_files:
         continue
 
     print(
-        f"{len(seen_files)} / {len(missing_edges)} ({round(len(seen_files) / len(missing_edges) * 100, 5)}%) Completed"
+        f"{len(missing_set) - len(missing_set - seen_files)} / {len(missing_set)} ({round((len(missing_set) - len(missing_set - seen_files)) / len(missing_edges) * 100, 5)}%) Completed"
+    )
+    print(
+        f"{len(missing_set - seen_files)} Remaining"
     )
     nearest_tenth_percentage = (
-        math.ceil(len(seen_files) / len(missing_edges) * 1000) / 10
+        math.ceil((len(missing_set) - len(missing_set - seen_files)) / len(missing_edges) * 1000) / 10
     )
     to_nearest_tenth_percentage = len(missing_edges) * math.ceil(
-        len(seen_files) / len(missing_edges) * 1000
-    ) // 1000 - len(seen_files)
+        (len(missing_set) - len(missing_set - seen_files)) / len(missing_edges) * 1000
+    ) // 1000 - (len(missing_set) - len(missing_set - seen_files))
     print(f"{to_nearest_tenth_percentage} more files to {nearest_tenth_percentage}% 🎉")
     if to_nearest_tenth_percentage == 0:
         print("🎉🎉🎉🎉🎉🎉🎉🎉🎉")
