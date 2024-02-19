@@ -1,0 +1,25 @@
+{
+  "name": "510k-graph",
+  "version": "1.0.0",
+  "description": "A visualization of 510k predicate data",
+  "main": "index.tsx",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:export": "next build && next export",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.2",
+    "next": "^14.1.0",
+    "react-bootstrap": "^2.10.1",
+    "react-force-graph": "^1.43.0",
+    "react-force-graph-2d": "^1.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.11.19",
+    "@types/react": "18.2.56",
+    "typescript": "5.3.3"
+  }
+}
