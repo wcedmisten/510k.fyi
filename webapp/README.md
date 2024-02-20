@@ -1,17 +1,27 @@
-# Backend
+# 510k.fyi webapp
+
+Meant to provide better search features for the FDA's 510k dataset and provide structured data on predicate devices.
+
+To run:
 
 ```
-flask --app server run --debug
+cp ../devices.db ./backend
 ```
 
-# Frontend
+For development:
 
 ```
-npm run dev
+docker compose -f docker-compose-dev.yml
 ```
 
-# TODO:
+For prod:
 
-* Add proxy so we don't need CORS for the server
-* Implement search on the backend
-* Implement search on the frontend
+```
+docker compose -f docker-compose-dev.yml
+```
+
+## Todo:
+
+* Add landing page
+* Move search to postgres
+* Use fuzzy string search in postgres

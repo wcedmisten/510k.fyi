@@ -1,12 +1,25 @@
+from time import sleep
+from fastapi import FastAPI
+import psycopg2
+from pydantic import BaseModel
+import os
+
 import sqlite3
-from flask import Flask
-from flask import request
 
-app = Flask(__name__)
+POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
 
+con = psycopg2.connect(
+    dbname="postgres",
+    user="postgres",
+    password=POSTGRES_PASSWORD,
+    host="database",
+    port="5432",
+)
+
+cur = con.cursor()
 
 def get_ancestors(device_id):
-    with sqlite3.connect("../devices.db") as con:
+    with sqlite3.connect("./devices.db") as con:
         cur = con.cursor()
         return cur.execute(
             """WITH RECURSIVE ancestor(n)
@@ -25,7 +38,7 @@ def get_ancestors(device_id):
 
 
 def get_device(device_id):
-    with sqlite3.connect("../devices.db") as con:
+    with sqlite3.connect("./devices.db") as con:
         cur = con.cursor()
         return cur.execute(
             """SELECT k_number, date_received, device_name, product_code FROM device WHERE k_number = ?""",
@@ -57,7 +70,7 @@ def format_node(row):
 def format_edge(row):
     return {"source": row["node_from"], "target": row["node_to"]}
 
-def get_ancestry_graph(device_id):
+async def get_ancestry_graph(device_id):
     ancestors = get_ancestors(device_id)
     device = get_device(device_id)
     res = list(map(format_row, ancestors))
@@ -113,9 +126,9 @@ def format_row_search(row):
         "product_code": row[3],
     }
 
-def device_search(query):
+async def device_search(query):
     rows = []
-    with sqlite3.connect("../devices.db") as con:
+    with sqlite3.connect("./devices.db") as con:
         cur = con.cursor()
         rows = cur.execute(
             """SELECT k_number, date_received, device_name, product_code FROM device WHERE k_number LIKE ? OR device_name LIKE ? ORDER BY date_received DESC""",
@@ -124,16 +137,16 @@ def device_search(query):
 
     return list(map(format_node, map(format_row_search, rows)))
 
-@app.route("/search")
-def search():
-    return device_search(request.args.get('query'))
+# DB model
+class Test(BaseModel):
+    field_1: str
 
-@app.route("/ancestry/<device_id>")
-def ancestry(device_id):
-    return get_ancestry_graph(device_id)
+app = FastAPI()
 
+@app.get("/ancestry/{device_number}") # , response_model=list[Test]
+async def read_user_details(device_number):
+    return await get_ancestry_graph(device_number)
 
-@app.after_request
-def add_header(response):
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    return response
+@app.get("/search")
+async def put_user_details(query):
+    return await device_search(query)

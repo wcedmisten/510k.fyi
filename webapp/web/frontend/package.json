@@ -4,18 +4,26 @@
   "description": "A visualization of 510k predicate data",
   "main": "index.tsx",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 80",
     "build": "next build",
-    "build:export": "next build && next export",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/font": "^13.5.6",
+    "@types/node": "18.11.18",
+    "@types/react": "17.0.2",
+    "@types/react-dom": "17.0.2",
+    "axios": "^1.6.7",
     "bootstrap": "^5.3.2",
+    "eslint": "7.23.0",
+    "eslint-config-next": "12.0.0",
     "next": "^14.1.0",
     "react-bootstrap": "^2.10.1",
-    "react-force-graph": "^1.43.0",
-    "react-force-graph-2d": "^1.25.0"
+    "react-force-graph": "^1.44.3",
+    "react-force-graph-2d": "^1.25.4",
+    "react-query": "^3.39.3",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "20.11.19",

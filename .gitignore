@@ -8,3 +8,4 @@ device-*.json*
 __pycache__
 node_modules
 .next
+webapp/postgres_data

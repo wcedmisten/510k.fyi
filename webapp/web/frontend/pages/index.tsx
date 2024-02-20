@@ -52,13 +52,13 @@ export const DeviceGraph = () => {
     const [numExtraResults, setNumExtraResults] = useState(0);
 
     useEffect(() => {
-        fetch(`http://localhost:5000/ancestry/${selectedNode}`).then(response => {
+        fetch(`/api/ancestry/${selectedNode}`).then(response => {
             const json = response.json()
             console.log("data", json)
             return json;
         }).then(data => {
             // expand the generic names out from the normalized json field
-            const expandedNodeData = data.nodes.map((node) => {
+            const expandedNodeData = data.nodes.map((node: any) => {
                 return { ...node, generic_name: data.product_descriptions[node.product_code] }
             })
             console.log("expandedNodeData", expandedNodeData)
@@ -74,14 +74,15 @@ export const DeviceGraph = () => {
         return graphData.nodes.find((node: { id: string }) => node.id === nodeId)
     }
 
-    const searchForNodes = (graphData: GraphData, query: string) => {
-        fetch(`http://localhost:5000/search?query=${query}`).then(response => {
+    const searchForNodes = (query: string) => {
+        fetch(`/api/search?query=${query}`).then(response => {
             const json = response.json()
-            console.log("data", json)
+
             return json;
         }).then(data => {
             // expand the generic names out from the normalized json field
             const nodes = data;
+            console.log("nodes", nodes)
             if (nodes.length > 10) {
                 setSearchResults(nodes.slice(0, 10))
                 setNumExtraResults(nodes.length - 10)
@@ -94,16 +95,14 @@ export const DeviceGraph = () => {
         });
     }
 
-    const finalData = graphData;
-
-    const handleClick = useCallback(node => {
+    const handleClick = useCallback((node: any) => {
         setSelectedNode(node.id)
         setSelectedNodeData(findNode(graphData, node.id))
     }, [graphData]);
 
     return <>
         <SearchInput onInputChange={(e) => {
-            searchForNodes(graphData, e)
+            searchForNodes(e)
         }}></SearchInput>
         {searchResults.length > 0 && <div className={style.SearchResultsWrapper}>
             <div className={style.SearchResults}>
@@ -135,14 +134,15 @@ export const DeviceGraph = () => {
                 {selectedNodeData?.product_code}
             </a>
             </p>
-            <p>Generic Name: {graphData?.product_descriptions?.[selectedNodeData?.product_code]}</p>
+            {graphData?.product_descriptions && selectedNodeData &&
+            <p>Generic Name: {graphData?.product_descriptions?.[selectedNodeData?.product_code]}</p>}
         </div>
 
-        {console.log("Rendering with", finalData)}
+        {console.log("Rendering with", graphData)}
 
         <ForceGraph
-            graphData={finalData}
-            nodeLabel={node => `Name: ${node.name}<br>ID: ${node.id}<br>Date: ${node.date}<br>Category: ${node.product_code}`}
+            graphData={graphData as any}
+            nodeLabel={(node: any) => `Name: ${node.name}<br>ID: ${node.id}<br>Date: ${node.date}<br>Category: ${node.product_code}`}
             nodeAutoColorBy="product_code"
             linkDirectionalArrowLength={3.5}
             linkDirectionalArrowRelPos={1}
@@ -150,7 +150,7 @@ export const DeviceGraph = () => {
             dagLevelDistance={20}
             nodeVal={(node: any) => node.id === selectedNode ? 10 : 1}
             onNodeClick={handleClick}
-            nodeCanvasObject={(node, ctx, globalScale) => {
+            nodeCanvasObject={(node: any, ctx: any, globalScale: any) => {
                 const label = node.id;
                 const fontSize = 12 / globalScale;
                 ctx.font = `${fontSize}px Sans-Serif`;
