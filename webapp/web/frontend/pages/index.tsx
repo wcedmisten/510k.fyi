@@ -164,7 +164,8 @@ export const DeviceGraph = () => {
                 ctx.beginPath();
                 ctx.arc(node.x, node.y, node.id === selectedNode ? 10 : 5, 0, 2 * Math.PI, false);
                 // color by recall status
-                ctx.fillStyle = node.recalls.length > 0 ? "#e62525" : "#424447";
+                ctx.fillStyle = node.recalls.length > 0 ? "#e62525" : "#a8c2e3";
+                // ctx.fillStyle = node.color;
                 ctx.fill();
 
                 if (node.id === selectedNode) {

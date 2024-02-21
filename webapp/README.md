@@ -25,3 +25,7 @@ docker compose -f docker-compose-dev.yml
 * Add landing page
 * Move search to postgres
 * Use fuzzy string search in postgres
+* Allow user to switch to table view instead of graph view to see all data at once
+* Show recall dates
+* Improve recall formatting
+* Add query params to URL for currently focused device (e.g. `?device=K102465`)
