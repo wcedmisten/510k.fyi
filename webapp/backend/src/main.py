@@ -36,6 +36,40 @@ def get_ancestors(device_id):
             [device_id],
         ).fetchall()
 
+def get_device_recalls(device_id):
+    with sqlite3.connect("./devices.db") as con:
+        cur = con.cursor()
+        return cur.execute(
+            """
+            SELECT device_recall.k_number, recall_id, recall.reason_for_recall
+            FROM device_recall
+            LEFT JOIN recall ON device_recall.recall_id = recall.id
+            WHERE device_recall.k_number = ?;
+            """,
+            [device_id]).fetchall()
+
+def get_ancestry_recalls(device_id):
+    with sqlite3.connect("./devices.db") as con:
+        cur = con.cursor()
+        return cur.execute(
+            """
+            SELECT device.k_number, recall_id, recall.reason_for_recall
+                    FROM (
+                        WITH RECURSIVE ancestor(n)
+                        AS (
+                            VALUES(?)
+                            UNION ALL
+                            SELECT node_from FROM predicate_graph_edge, ancestor
+                            WHERE predicate_graph_edge.node_to=ancestor.n
+                        )
+                        SELECT node_to, node_from
+                        FROM predicate_graph_edge
+                        WHERE predicate_graph_edge.node_to IN ancestor
+                    ) ancestry
+                    JOIN device ON ancestry.node_from = device.k_number
+                    LEFT JOIN device_recall ON device_recall.k_number = device.k_number LEFT JOIN recall ON device_recall.recall_id = recall.id;
+            """,
+            [device_id]).fetchall()
 
 def get_device(device_id):
     with sqlite3.connect("./devices.db") as con:
@@ -72,16 +106,61 @@ def format_edge(row):
 
 async def get_ancestry_graph(device_id):
     ancestors = get_ancestors(device_id)
+
+    # fetch the recalls separately because `GROUP BY k_number` kills the query time
+    # compared to doing it in memory
+
+    recalls_map = {}
+    device_recalls = get_device_recalls(device_id)
+    for recall in device_recalls:
+        k_number = recall[0]
+        recall_id = recall[1]
+        recall_reason = recall[2]
+
+        if k_number not in recalls_map:
+            recalls_map[k_number] = []
+
+        if recall_id is not None:
+            recalls_map[k_number].append({
+                "recall_id": recall_id,
+                "reason": recall_reason
+            })
+
+
+    for recall in get_ancestry_recalls(device_id):
+        # device.k_number, recall_id, recall.reason_for_recall
+        k_number = recall[0]
+        recall_id = recall[1]
+        recall_reason = recall[2]
+
+        if k_number not in recalls_map:
+            recalls_map[k_number] = []
+
+        if recall_id is not None:
+            recalls_map[k_number].append({
+                "recall_id": recall_id,
+                "reason": recall_reason
+            })
+
     device = get_device(device_id)
     res = list(map(format_row, ancestors))
 
     edges = list(map(format_edge, res))
     nodes = list(map(format_node, res))
 
+    nodes.append({
+        # k_number, date_received, device_name, product_code
+        "id": device[0],
+        "date": device[1],
+        "name": device[2],
+        "product_code": device[3]
+    })
+
+    for node in nodes:
+        node["recalls"] = recalls_map.get(node["id"], [])
+
     unique_nodes = []
     seen_nodes = set()
-
-    all_nodes = set(map(lambda x: x["id"], nodes))
 
     names = {}
 
@@ -98,14 +177,6 @@ async def get_ancestry_graph(device_id):
             unique_nodes.append(node)
 
         seen_nodes.add(node["id"])
-
-    unique_nodes.append({
-        # k_number, date_received, device_name, product_code
-        "id": device[0],
-        "date": device[1],
-        "name": device[2],
-        "product_code": device[3]
-    })
 
     product_descriptions = {}
 

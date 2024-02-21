@@ -136,14 +136,16 @@ export const DeviceGraph = () => {
             </p>
             {graphData?.product_descriptions && selectedNodeData &&
             <p>Generic Name: {graphData?.product_descriptions?.[selectedNodeData?.product_code]}</p>}
+            {selectedNodeData?.recalls && selectedNodeData?.recalls.length > 0 &&
+            <p>Recalls: {selectedNodeData?.recalls.map((recall) => <p key={recall.recall_id}>{recall.reason}</p>)}</p>}
         </div>
 
         {console.log("Rendering with", graphData)}
 
         <ForceGraph
             graphData={graphData as any}
-            nodeLabel={(node: any) => `Name: ${node.name}<br>ID: ${node.id}<br>Date: ${node.date}<br>Category: ${node.product_code}`}
-            nodeAutoColorBy="product_code"
+            nodeLabel={(node: any) => `Name: ${node.name}<br>ID: ${node.id}<br>Date: ${node.date}<br>Category: ${node.product_code}<br>Recalls:<br>${node.recalls.map((recall) => recall.reason + "<br>")}`}
+            // nodeAutoColorBy="product_code"
             linkDirectionalArrowLength={3.5}
             linkDirectionalArrowRelPos={1}
             dagMode="zout"
@@ -161,7 +163,8 @@ export const DeviceGraph = () => {
 
                 ctx.beginPath();
                 ctx.arc(node.x, node.y, node.id === selectedNode ? 10 : 5, 0, 2 * Math.PI, false);
-                ctx.fillStyle = node.color;
+                // color by recall status
+                ctx.fillStyle = node.recalls.length > 0 ? "#e62525" : "#424447";
                 ctx.fill();
 
                 if (node.id === selectedNode) {
