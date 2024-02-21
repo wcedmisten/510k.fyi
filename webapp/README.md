@@ -29,3 +29,4 @@ docker compose -f docker-compose-dev.yml
 * Show recall dates
 * Improve recall formatting
 * Add query params to URL for currently focused device (e.g. `?device=K102465`)
+* Show descendents as well as ancestors
