@@ -2,8 +2,12 @@ import { Col, Container, Navbar, Row } from 'react-bootstrap'
 import style from './landing-page.module.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { NavBar } from '../components/Navbar';
+import { useState } from 'react';
+import { useRouter } from 'next/router';
 
 export const LandingPage = () => {
+    const [queryValue, setQueryValue] = useState();
+    const router = useRouter();
     return <>
         <NavBar/>
         <Container>
@@ -15,8 +19,25 @@ export const LandingPage = () => {
             </Row>
             <Row>
                 <Col>
-                    <div className={style.deviceLinkWrapper}>
-                        <a className={style.deviceLink} href="/devices">Search for a device</a>
+                    <div className={style.searchButtonWrapper}>
+                        <form>
+                            <input className={style.SearchInput}
+                                onChange={(e) => setQueryValue(e.target.value)}
+                                // onSubmit={(e) => {
+                                //     e.preventDefault()
+                                //     router.push(!!queryValue ? `/search?q=${queryValue}` : "/search")
+                                // }}
+                            />
+                            <input
+                                type="submit"
+                                className={style.searchButton}
+                                value="Search for a device"
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    router.push(!!queryValue ? `/search?q=${queryValue}` : "/search")
+                                }}
+                            />
+                        </form>
                     </div>
                 </Col>
             </Row>

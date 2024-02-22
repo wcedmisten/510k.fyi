@@ -66,7 +66,7 @@
     font-size: 22px;
 }
 
-.deviceLink {
+.searchButton {
   align-items: center;
   appearance: none;
   /* background-image: radial-gradient(100% 100% at 100% 0, #5adaff 0, #5468ff 100%); */
@@ -99,24 +99,24 @@
   font-size: 22px;
 }
 
-.deviceLink:hover {
+.searchButton:hover {
   box-shadow: rgba(22, 2, 66, 0.4) 0 4px 8px, rgba(45, 35, 66, .3) 0 7px 13px -3px, #061267 0 -3px 0 inset;
   transform: translateY(-4px);
 }
 
-.deviceLink:active {
+.searchButton:active {
   box-shadow: #040a38 0 3px 7px inset;
   transform: translateY(4px);
 }
 
-.deviceLinkWrapper {
+.searchButtonWrapper {
     text-align: center;
     margin-bottom: 100px;
     margin-top: 50px;
 }
 
 @media only screen and (max-width: 600px) {
-    .deviceLinkWrapper {
+    .searchButtonWrapper {
         text-align: center;
         margin-bottom: 50px;
         margin-top: 20px;

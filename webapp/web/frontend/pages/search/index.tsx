@@ -8,6 +8,9 @@ const ForceGraph = dynamic(() => import('../../components/ForceGraph'), {
     ssr: false,
 })
 
+import { useSearchParams } from 'next/navigation'
+import { NavBar } from "../../components/Navbar";
+
 const SearchInput = ({ onInputChange }: { onInputChange: (e: any) => void }) => {
     const [searchInput, setSearchInput] = useState("")
 
@@ -51,25 +54,6 @@ export const DeviceGraph = () => {
 
     const [numExtraResults, setNumExtraResults] = useState(0);
 
-    useEffect(() => {
-        fetch(`/api/ancestry/${selectedNode}`).then(response => {
-            const json = response.json()
-            console.log("data", json)
-            return json;
-        }).then(data => {
-            // expand the generic names out from the normalized json field
-            const expandedNodeData = data.nodes.map((node: any) => {
-                return { ...node, generic_name: data.product_descriptions[node.product_code] }
-            })
-            console.log("expandedNodeData", expandedNodeData)
-            setGraphData({ ...data, nodes: expandedNodeData });
-            setSelectedNodeData(findNode(data, selectedNode))
-        }).catch(err => {
-            // Do something for an error here
-            console.log("Error Reading data " + err);
-        });
-    }, [selectedNode])
-
     const findNode = (graphData: GraphData, nodeId: string) => {
         return graphData.nodes.find((node: { id: string }) => node.id === nodeId)
     }
@@ -82,7 +66,6 @@ export const DeviceGraph = () => {
         }).then(data => {
             // expand the generic names out from the normalized json field
             const nodes = data;
-            console.log("nodes", nodes)
             if (nodes.length > 10) {
                 setSearchResults(nodes.slice(0, 10))
                 setNumExtraResults(nodes.length - 10)
@@ -95,15 +78,18 @@ export const DeviceGraph = () => {
         });
     }
 
-    const handleClick = useCallback((node: any) => {
-        setSelectedNode(node.id)
-        setSelectedNodeData(findNode(graphData, node.id))
-    }, [graphData]);
+    const searchParams = useSearchParams()
+
+    const search = searchParams.get('q')
+
+    useEffect(() => searchForNodes(search), [search])
 
     return <>
+        <NavBar />
         <SearchInput onInputChange={(e) => {
             searchForNodes(e)
-        }}></SearchInput>
+        }}>
+        </SearchInput>
         {searchResults.length > 0 && <div className={style.SearchResultsWrapper}>
             <div className={style.SearchResults}>
                 {searchResults.map(node => {
@@ -135,48 +121,10 @@ export const DeviceGraph = () => {
             </a>
             </p>
             {graphData?.product_descriptions && selectedNodeData &&
-            <p>Generic Name: {graphData?.product_descriptions?.[selectedNodeData?.product_code]}</p>}
+                <p>Generic Name: {graphData?.product_descriptions?.[selectedNodeData?.product_code]}</p>}
             {selectedNodeData?.recalls && selectedNodeData?.recalls.length > 0 &&
-            <p>Recalls: {selectedNodeData?.recalls.map((recall) => <p key={recall.recall_id}>{recall.reason}</p>)}</p>}
+                <p>Recalls: {selectedNodeData?.recalls.map((recall) => <p key={recall.recall_id}>{recall.reason}</p>)}</p>}
         </div>
-
-        {console.log("Rendering with", graphData)}
-
-        <ForceGraph
-            graphData={graphData as any}
-            nodeLabel={(node: any) => `Name: ${node.name}<br>ID: ${node.id}<br>Date: ${node.date}<br>Category: ${node.product_code}<br>Recalls:<br>${node.recalls.map((recall) => recall.reason + "<br>")}`}
-            // nodeAutoColorBy="product_code"
-            linkDirectionalArrowLength={3.5}
-            linkDirectionalArrowRelPos={1}
-            dagMode="zout"
-            dagLevelDistance={20}
-            nodeVal={(node: any) => node.id === selectedNode ? 10 : 1}
-            onNodeClick={handleClick}
-            nodeCanvasObject={(node: any, ctx: any, globalScale: any) => {
-                const label = node.id;
-                const fontSize = 12 / globalScale;
-                ctx.font = `${fontSize}px Sans-Serif`;
-                const textWidth = ctx.measureText(label).width;
-                const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
-
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-
-                ctx.beginPath();
-                ctx.arc(node.x, node.y, node.id === selectedNode ? 10 : 5, 0, 2 * Math.PI, false);
-                // color by recall status
-                ctx.fillStyle = node.recalls.length > 0 ? "#e62525" : "#a8c2e3";
-                // ctx.fillStyle = node.color;
-                ctx.fill();
-
-                if (node.id === selectedNode) {
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = '#003300';
-                    ctx.stroke();
-                }
-
-                node.__bckgDimensions = bckgDimensions; // to re-use in nodePointerAreaPaint
-            }}
-        />
     </>
 };
 
