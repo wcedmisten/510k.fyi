@@ -1,22 +1,22 @@
 from time import sleep
 from fastapi import FastAPI
-import psycopg2
+# import psycopg2
 from pydantic import BaseModel
 import os
 
 import sqlite3
 
-POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
+# POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
 
-con = psycopg2.connect(
-    dbname="postgres",
-    user="postgres",
-    password=POSTGRES_PASSWORD,
-    host="database",
-    port="5432",
-)
+# con = psycopg2.connect(
+#     dbname="postgres",
+#     user="postgres",
+#     password=POSTGRES_PASSWORD,
+#     host="database",
+#     port="5432",
+# )
 
-cur = con.cursor()
+# cur = con.cursor()
 
 def get_ancestors(device_id):
     with sqlite3.connect("./devices.db") as con:

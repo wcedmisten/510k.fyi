@@ -1,0 +1,20 @@
+.title {
+    font-size: 30px;
+    color: #151255;
+    margin-left: 10px;
+}
+
+.about {
+  font-size: 26px;
+  color: #151255;
+}
+
+.logo {
+  display:inline-block;
+  vertical-align: middle;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+}

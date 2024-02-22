@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from 'next/dynamic';
 
 import style from './fda-510k.module.css'
-import { NavBar } from "../../components/Navbar";
 
 const ForceGraph = dynamic(() => import('../../components/ForceGraph'), {
     ssr: false,
@@ -102,7 +101,6 @@ export const DeviceGraph = () => {
     }, [graphData]);
 
     return <>
-        <NavBar></NavBar>
         <SearchInput onInputChange={(e) => {
             searchForNodes(e)
         }}></SearchInput>
