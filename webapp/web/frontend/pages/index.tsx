@@ -21,12 +21,8 @@ export const LandingPage = () => {
                 <Col>
                     <div className={style.searchButtonWrapper}>
                         <form>
-                            <input className={style.SearchInput}
+                            <input className={style.searchInput}
                                 onChange={(e) => setQueryValue(e.target.value)}
-                                // onSubmit={(e) => {
-                                //     e.preventDefault()
-                                //     router.push(!!queryValue ? `/search?q=${queryValue}` : "/search")
-                                // }}
                             />
                             <input
                                 type="submit"

@@ -66,6 +66,13 @@
     font-size: 22px;
 }
 
+.searchInput {
+  padding: 14px 50px;
+  line-height: 28px;
+  border-radius: 6px;
+  margin-right: 40px;
+}
+
 .searchButton {
   align-items: center;
   appearance: none;
