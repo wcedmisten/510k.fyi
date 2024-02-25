@@ -110,7 +110,7 @@ seen = set()
 
 tree = {}
 
-res = cur.execute("SELECT k_number FROM device WHERE k_number NOT LIKE 'DEN%' AND statement_or_summary = 'Summary' AND date_received > '2022-12-06' ORDER BY date_received DESC LIMIT 1;")
+res = cur.execute("SELECT k_number FROM device WHERE k_number NOT LIKE 'DEN%' AND statement_or_summary = 'Summary' AND date_received > '2022-12-06' ORDER BY date_received DESC;")
 rows = res.fetchall()
 
 # from https://www.accessdata.fda.gov/robots.txt
