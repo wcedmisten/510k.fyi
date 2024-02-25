@@ -52,16 +52,22 @@ with open("device-510k-0001-of-0001.json") as f:
 
     for device in data["results"]:
         bar.next()
-        vals = (
-            device.get("k_number"),
-            device.get("date_received"),
-            device["openfda"].get("device_name"),
-            device.get("device_name"),
-            device.get("product_code"),
-            device.get("statement_or_summary"),
-        )
 
-        cur.execute("INSERT INTO device VALUES(?, ?, ?, ?, ?, ?)", vals)
+        # skip the DE NOVO devices
+        if "DEN" not in device.get("k_number"):
+            vals = (
+                device.get("k_number"),
+                device.get("date_received"),
+                device["openfda"].get("device_name"),
+                device.get("device_name"),
+                device.get("product_code"),
+                device.get("statement_or_summary"),
+            )
+
+            try:
+                cur.execute("INSERT INTO device VALUES(?, ?, ?, ?, ?, ?)", vals)
+            except Exception:
+                continue
 
     con.commit()
 
@@ -88,10 +94,13 @@ with open("device-recall-0001-of-0001.json") as f:
             recall.get("reason_for_recall"),
         )
 
-        cur.execute("INSERT INTO recall VALUES(?, ?, ?, ?, ?)", vals)
+        try:
+            cur.execute("INSERT INTO recall VALUES(?, ?, ?, ?, ?)", vals)
 
-        for k_number in recall.get("k_numbers", []):
-            cur.execute("INSERT INTO device_recall VALUES(?, ?)", (id, k_number))
+            for k_number in recall.get("k_numbers", []):
+                cur.execute("INSERT INTO device_recall VALUES(?, ?)", (id, k_number))
+        except Exception:
+            continue
 
     con.commit()
 
