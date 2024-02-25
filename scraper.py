@@ -7,6 +7,8 @@ import shutil
 import sqlite3
 import pytz
 
+# run with: screen -L -Logfile logfile.txt -d -m python3 scraper.py
+
 http = urllib3.PoolManager()
 
 con = sqlite3.connect("devices.db")
