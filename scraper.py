@@ -118,7 +118,7 @@ visiting_hours_start = 23
 visiting_hours_end = 5
 
 for device in rows:
-    current_hour = datetime.datetime.now(pytz.timezone('US/Eastern')).time().hour
+    current_hour = datetime.datetime.now(pytz.timezone('America/New_York')).time().hour
     counter = 0
     
     while current_hour < visiting_hours_start and current_hour > visiting_hours_end:
