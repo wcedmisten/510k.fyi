@@ -117,7 +117,7 @@ rows = res.fetchall()
 visiting_hours_start = 23
 visiting_hours_end = 5
 
-print("Running on " + len(rows) + " rows")
+print(f"Running on {len(rows)} rows")
 
 for device in rows:
     current_hour = datetime.datetime.now(pytz.timezone('America/New_York')).time().hour
