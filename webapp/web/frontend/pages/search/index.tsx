@@ -10,6 +10,7 @@ const ForceGraph = dynamic(() => import('../../components/ForceGraph'), {
 
 import { useSearchParams } from 'next/navigation'
 import { NavBar } from "../../components/Navbar";
+import { useRouter } from "next/router";
 
 const SearchInput = ({ onInputChange }: { onInputChange: (e: any) => void }) => {
     const [searchInput, setSearchInput] = useState("")
@@ -43,12 +44,7 @@ interface GraphData {
 }
 
 export const DeviceGraph = () => {
-    const [graphData, setGraphData] = useState<GraphData & { product_descriptions: any; }>(
-        { links: [], nodes: [], product_descriptions: {} }
-    );
-
-    const [selectedNode, setSelectedNode] = useState<string>("K223649");
-    const [selectedNodeData, setSelectedNodeData] = useState<NodeData | undefined>();
+    const router = useRouter();
 
     const [searchResults, setSearchResults] = useState<NodeData[]>([])
 
@@ -95,10 +91,8 @@ export const DeviceGraph = () => {
                 {searchResults.map(node => {
                     return <div key={node.id} className={style.SearchResult} onClick={
                         (e: any) => {
-                            setSelectedNode(node.id)
-                            setSelectedNodeData(node)
-                            setSearchResults([])
-                            setNumExtraResults(0)
+                            e.preventDefault()
+                            router.push(`/devices?id=${node.id}`)
                         }
                     }>{node.id} - {node.name}</div>
                 })}
@@ -109,22 +103,6 @@ export const DeviceGraph = () => {
             </div>
 
         </div>}
-        <div className={style.InfoSection}>
-            <p>Name: {selectedNodeData?.name}</p>
-            <p>Device ID: <a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPMN/pmn.cfm?ID=${selectedNodeData?.id}`}
-                target="_blank" rel="noopener noreferrer">{selectedNode}</a></p>
-            <p>Date Recieved: {selectedNodeData?.date} </p>
-            <p>Product Code: <a href={
-                `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPCD/classification.cfm?id=${selectedNodeData?.product_code}`
-            } target="_blank" rel="noopener noreferrer">
-                {selectedNodeData?.product_code}
-            </a>
-            </p>
-            {graphData?.product_descriptions && selectedNodeData &&
-                <p>Generic Name: {graphData?.product_descriptions?.[selectedNodeData?.product_code]}</p>}
-            {selectedNodeData?.recalls && selectedNodeData?.recalls.length > 0 &&
-                <p>Recalls: {selectedNodeData?.recalls.map((recall) => <p key={recall.recall_id}>{recall.reason}</p>)}</p>}
-        </div>
     </>
 };
 

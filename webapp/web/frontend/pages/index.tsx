@@ -76,7 +76,8 @@ export const LandingPage = () => {
                     </div>
                 </Col>
             </Row>
-            <Row>
+            {/* TODO: add screenshots */}
+            {/* <Row>
                 <Col>
                     <h3 className={style.featuresHeader}>Features</h3>
                 </Col>
@@ -91,7 +92,7 @@ export const LandingPage = () => {
                 <Col>
                     <p>Integrated recall information</p>
                 </Col>
-            </Row>
+            </Row> */}
             
         </Container>
     </>

@@ -20,8 +20,8 @@
 
 @media only screen and (max-width: 600px) {
   .subTitle {
-      text-align: center;
-      margin-top: 30px;
+    text-align: center;
+    margin-top: 30px;
     margin-bottom: 30px;
   }
 }
@@ -67,10 +67,18 @@
 }
 
 .searchInput {
-  padding: 14px 50px;
-  line-height: 28px;
+  /* line-height: 60px; */
+  font-size: 22px;
   border-radius: 6px;
   margin-right: 40px;
+  width: 360px;
+  height: 40px;
+}
+
+@media only screen and (max-width: 600px) {
+  .searchInput {
+    margin-bottom: 20px;
+  }
 }
 
 .searchButton {

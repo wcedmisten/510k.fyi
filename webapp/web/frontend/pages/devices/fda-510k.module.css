@@ -54,3 +54,19 @@
     border: 1px solid #ababab;
     color: #000;
 }
+
+.missingPredicatesDisclaimerWrapper {
+    display: inline;
+}
+
+.missingPredicatesDisclaimer {
+    text-align: center;
+    font-size: 22px;
+}
+
+.LoadingWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
