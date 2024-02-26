@@ -22,7 +22,7 @@ export const LandingPage = () => {
                     <div className={style.searchButtonWrapper}>
                         <form>
                             <input className={style.searchInput}
-                                onChange={(e) => setQueryValue(e.target.value)}
+                                onChange={(e) => setQueryValue(e.target.value as any)}
                             />
                             <input
                                 type="submit"

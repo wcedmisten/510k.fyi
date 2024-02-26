@@ -11,26 +11,6 @@ const ForceGraph = dynamic(() => import('../../components/ForceGraph'), {
     ssr: false,
 })
 
-interface NodeData {
-    date: string;
-    id: string;
-    product_code: string;
-    name: string;
-    generic_name: string;
-}
-
-interface GraphData {
-    nodes: NodeData[];
-    links: any[];
-}
-
-interface PredicateGraphProps {
-    graphData: GraphData;
-    selectedNode: any;
-    setSelectedNode: any;
-    setSelectedNodeData: any;
-}
-
 const findNode = (graphData: GraphData, nodeId: string) => {
     return graphData.nodes.find((node: { id: string }) => node.id === nodeId)
 }
@@ -44,11 +24,11 @@ const PredicateGraph = ({graphData, selectedNode, setSelectedNode, setSelectedNo
     return graphData?.links?.length > 0 ?
         <ForceGraph
             graphData={graphData as any}
-            nodeLabel={(node: any) => `Name: ${node.name}<br>ID: ${node.id}<br>Date: ${node.date}<br>Category: ${node.product_code}<br>Recalls: ${node?.recalls?.length ? node.recalls.map((recall) => "<br>" + recall.reason) : "None"}`}
+            nodeLabel={(node: any) => `Name: ${node.name}<br>ID: ${node.id}<br>Date: ${node.date}<br>Category: ${node.product_code}<br>Recalls: ${node?.recalls?.length ? node.recalls.map((recall: Recall) => "<br>" + recall.reason) : "None"}`}
             // nodeAutoColorBy="product_code"
             linkDirectionalArrowLength={3.5}
             linkDirectionalArrowRelPos={1}
-            dagMode="zout"
+            dagMode={"zout" as any}
             dagLevelDistance={20}
             nodeVal={(node: any) => node.id === selectedNode ? 10 : 1}
             onNodeClick={handleClick}
@@ -93,7 +73,7 @@ export const DeviceGraph = () => {
 
 
     useEffect(() => {
-        setSelectedNode(searchParams.get("id"));
+        setSelectedNode(searchParams.get("id") || undefined);
     }, [searchParams])
 
     const [selectedNodeData, setSelectedNodeData] = useState<NodeData | undefined>();
@@ -103,19 +83,21 @@ export const DeviceGraph = () => {
     const [numExtraResults, setNumExtraResults] = useState(0);
 
     useEffect(() => {
-        fetch(`/api/ancestry/${selectedNode}`).then(response => {
-            return response.json();
-        }).then(data => {
-            // expand the generic names out from the normalized json field
-            const expandedNodeData = data.nodes.map((node: any) => {
-                return { ...node, generic_name: data.product_descriptions[node.product_code] }
-            })
-            setGraphData({ ...data, nodes: expandedNodeData });
-            setSelectedNodeData(findNode(data, selectedNode))
-        }).catch(err => {
-            // Do something for an error here
-            console.log("Error Reading data " + err);
-        });
+        if (!!selectedNode) {
+            fetch(`/api/ancestry/${selectedNode}`).then(response => {
+                return response.json();
+            }).then(data => {
+                // expand the generic names out from the normalized json field
+                const expandedNodeData = data.nodes.map((node: any) => {
+                    return { ...node, generic_name: data.product_descriptions[node.product_code] }
+                })
+                setGraphData({ ...data, nodes: expandedNodeData });
+                setSelectedNodeData(findNode(data, selectedNode))
+            }).catch(err => {
+                // Do something for an error here
+                console.log("Error Reading data " + err);
+            });
+        }
     }, [selectedNode])
 
     return <>
@@ -153,7 +135,7 @@ export const DeviceGraph = () => {
             {graphData?.product_descriptions && selectedNodeData &&
             <p>Generic Name: {graphData?.product_descriptions?.[selectedNodeData?.product_code]}</p>}
             {selectedNodeData?.recalls && selectedNodeData?.recalls.length > 0 &&
-            <p>Recalls: {selectedNodeData?.recalls.map((recall) => <a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfres/res.cfm?id=${recall.recall_id}`} target="_blank">{recall.reason}</a>)}</p>}
+            <p>Recalls: {selectedNodeData?.recalls.map((recall: Recall) => <a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfres/res.cfm?id=${recall.recall_id}`} target="_blank">{recall.reason}</a>)}</p>}
         </div>
 
         {graphData.nodes.length ? <PredicateGraph

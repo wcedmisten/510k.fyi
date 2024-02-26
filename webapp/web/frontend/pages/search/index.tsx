@@ -78,7 +78,7 @@ export const DeviceGraph = () => {
 
     const search = searchParams.get('q')
 
-    useEffect(() => searchForNodes(search), [search])
+    useEffect(() => {if (!!search) {searchForNodes(search)}}, [search])
 
     return <>
         <NavBar />
