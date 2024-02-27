@@ -13,8 +13,7 @@ export const LandingPage = () => {
         <Container>
             <Row>
                 <Col>
-                    <h1 className={style.title}></h1>
-                    <h2 className={style.subTitle}>Reveal new insights on medical devices</h2>
+                    <h1 className={style.title}>Reveal new insights about medical devices</h1>
                 </Col>
             </Row>
             <Row>

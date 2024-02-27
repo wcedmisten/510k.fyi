@@ -1,21 +1,16 @@
 .title {
-    font-size: 30px;
-    color: #151255;
+  text-align:center;
+  font-size: 50px;
+  color: var(--Blue600);
+  margin-top: 50px;
+  margin-bottom: 50px;
+  font-weight: 500;
+  font-family: 'Bitter';
 }
 
 .about {
   font-size: 26px;
-  color: #151255;
-}
-
-.subTitle {
-    text-align:center;
-    font-size: 50px;
-    color: #151255;
-    margin-top: 50px;
-    margin-bottom: 50px;
-    font-weight: 500;
-    background: linear-gradient(to right bottom, rgb(255, 255, 255) 30%, rgba(255, 255, 255, 0.38)) padding-box text
+  color: var(--Blue500);
 }
 
 @media only screen and (max-width: 600px) {
@@ -31,7 +26,7 @@
   margin-bottom: 50px;
   text-align:center;
   font-size: 40px;
-  color: #151255;
+  color: var(--Blue600);
 }
 
 .featuresText {
@@ -39,26 +34,27 @@
   margin-bottom: 50px;
   text-align:center;
   font-size: 40px;
-  color: #151255;
+  color: var(--Blue600);
 }
 
 .questionWrapper {
-  border-color: #b698ec;
   border-width: 2px;
   border-radius: 15px;
   padding: 20px;
   background-image: radial-gradient(
     farthest-corner at 60% 0,
-    rgb(188, 210, 247) 0%,
+    rgb(211, 242, 247) 0%,
     #f0eded 100%
   );
   margin: 10px;
 }
 
 .question {
-    color: #151255;
+    color: var(--Blue500);
     font-size: 30px;
     line-height: 1.2;
+    font-family: 'Bitter-Italic';
+    font-weight: 600;
 }
 
 .answer {
@@ -91,6 +87,7 @@
     #5a54c6 100%
   );
   border-radius: 12px;
+  border-width: 0;
   box-sizing: border-box;
   color: #fff;
   cursor: pointer;

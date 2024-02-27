@@ -1,12 +1,16 @@
 .title {
     font-size: 30px;
-    color: #151255;
+    color: var(--Blue600);;
     margin-left: 10px;
+    font-family: 'Bitter';
+    font-weight: 600;
 }
 
 .about {
-  font-size: 26px;
-  color: #151255;
+  font-size: 30px;
+  color: var(--Blue600);;
+  font-family: 'Bitter';
+  font-weight: 400;
 }
 
 .logo {
