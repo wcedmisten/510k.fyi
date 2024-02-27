@@ -70,7 +70,7 @@ export const LandingPage = () => {
                         <b className={style.question}>Does this website cost money to use?</b>
                         <p className={style.answer}>
                             This website can be used free of charge. All data from the FDA is public domain,
-                            and the code for this website is licensed under an open source MIT license.
+                            and the code for this website is licensed under an open source license.
                         </p>
                     </div>
                 </Col>
