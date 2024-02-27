@@ -11,6 +11,7 @@
 .subTitle {
     text-align:center;
     font-size: 50px;
+    font-family: 'Bitter';
     color: #151255;
     margin-top: 50px;
     margin-bottom: 50px;
@@ -24,4 +25,8 @@
       margin-top: 30px;
     margin-bottom: 30px;
   }
+}
+
+.text {
+  font-size: 18px;
 }

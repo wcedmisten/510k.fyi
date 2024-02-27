@@ -1,6 +1,6 @@
 import { Col, Container, Navbar, Row } from 'react-bootstrap'
 import style from './landing-page.module.css'
-import 'bootstrap/dist/css/bootstrap.min.css';
+
 import { NavBar } from '../components/Navbar';
 import { useState } from 'react';
 import { useRouter } from 'next/router';

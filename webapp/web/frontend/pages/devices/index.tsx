@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import dynamic from 'next/dynamic';
 
-import style from './fda-510k.module.css'
+import style from './devices.module.css'
 import { NavBar } from "../../components/Navbar";
 import { useSearchParams } from "next/navigation";
 import { Spinner } from "react-bootstrap";

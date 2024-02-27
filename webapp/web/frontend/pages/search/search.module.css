@@ -3,6 +3,12 @@
     display: block;
     margin-left: auto;
     margin-right: auto;
+
+    font-size: 22px;
+    border-radius: 6px;
+    border-color: var(--Blue300);
+    width: 360px;
+    height: 40px;
 }
 
 .SearchResultsWrapper {

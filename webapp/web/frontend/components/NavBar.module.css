@@ -10,8 +10,16 @@
   font-size: 30px;
   color: var(--Blue600);;
   font-family: 'Bitter';
-  font-weight: 400;
+  font-weight: 300;
 }
+
+.search {
+  font-size: 30px;
+  color: var(--Blue600);;
+  font-family: 'Bitter';
+  font-weight: 600;
+}
+
 
 .logo {
   display:inline-block;

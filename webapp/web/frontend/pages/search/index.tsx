@@ -1,12 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-import dynamic from 'next/dynamic';
-
-import style from './fda-510k.module.css'
-
-const ForceGraph = dynamic(() => import('../../components/ForceGraph'), {
-    ssr: false,
-})
+import style from './search.module.css'
 
 import { useSearchParams } from 'next/navigation'
 import { NavBar } from "../../components/Navbar";
@@ -36,11 +30,6 @@ interface NodeData {
     product_code: string;
     name: string;
     generic_name: string;
-}
-
-interface GraphData {
-    nodes: NodeData[];
-    links: any[];
 }
 
 export const DeviceGraph = () => {
@@ -74,7 +63,7 @@ export const DeviceGraph = () => {
 
     const search = searchParams.get('q')
 
-    useEffect(() => {if (!!search) {searchForNodes(search)}}, [search])
+    useEffect(() => {if (searchParams.has('q')) {searchForNodes(searchParams.get('q') || "")}}, [searchParams])
 
     return <>
         <NavBar />
@@ -82,37 +71,38 @@ export const DeviceGraph = () => {
             searchForNodes(e)
         }}>
         </SearchInput>
-        {searchResults.length > 0 ? <div className={style.SearchResultsWrapper}>
-        <div className="table-responsive">
-            <table className="table table-striped table-hover">
-                <thead>
-                    <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Device Name</th>
-                    <th scope="col">Date Received</th>
-                    <th scope="col">Product Code</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {searchResults.map(node => {
-                        return <tr className={style.tableRow} onClick={
-                            (e: any) => {
-                                e.preventDefault()
-                                router.push(`/devices?id=${node.id}`)
-                            }}>
-                            <th scope="row">{node.id}</th>
-                            <td>{node.name}</td>
-                            <td>{node.date}</td>
-                            <td>{node.product_code}</td>
+        <div className={style.SearchResultsWrapper}> {searchResults.length > 0 ? 
+            <div className="table-responsive">
+                <table className="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Device Name</th>
+                        <th scope="col">Date Received</th>
+                        <th scope="col">Product Code</th>
                         </tr>
-                    })}
-                </tbody>
-            </table>
-            {numExtraResults > 0 &&
-            <p>
-                {numExtraResults} more results...
-            </p>}
-        </div></div> : <p>No results found.</p>}
+                    </thead>
+                    <tbody>
+                        {searchResults.map(node => {
+                            return <tr className={style.tableRow} onClick={
+                                (e: any) => {
+                                    e.preventDefault()
+                                    router.push(`/devices?id=${node.id}`)
+                                }}>
+                                <th scope="row">{node.id}</th>
+                                <td>{node.name}</td>
+                                <td>{node.date}</td>
+                                <td>{node.product_code}</td>
+                            </tr>
+                        })}
+                    </tbody>
+                </table>
+                {numExtraResults > 0 &&
+                <p>
+                    {numExtraResults} more results...
+                </p>}
+            </div> : searchParams.has('q') && <p>No results found.</p>}
+        </div>
     </>
 };
 
