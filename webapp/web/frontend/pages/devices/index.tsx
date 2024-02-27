@@ -132,11 +132,11 @@ export const DeviceGraph = () => {
             <p>Device ID: <a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPMN/pmn.cfm?ID=${selectedNodeData?.id}`}
                 target="_blank" rel="noopener noreferrer">{selectedNode}</a></p>
             <p>Date Recieved: {selectedNodeData?.date} </p>
-            <p>Product Category: <a href={
+            {graphData?.product_descriptions && selectedNodeData && <p>Product Category: <a href={
                 `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPCD/classification.cfm?id=${selectedNodeData?.product_code}`
             } target="_blank" rel="noopener noreferrer">
                 {graphData?.product_descriptions?.[selectedNodeData?.product_code]}
-            </a></p>
+            </a></p>}
             {!!graphData.nodes && <p>Number of devices in predicate ancestry: {graphData.nodes.length}</p>}
             {!!graphData.nodes && <p>Number of recalled devices in ancestry: {numAncestryRecalled} ({ancestryRecalledPercent}%)</p>}
             {selectedNodeData?.recalls && selectedNodeData?.recalls.length > 0 &&
