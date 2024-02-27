@@ -50,10 +50,6 @@ export const DeviceGraph = () => {
 
     const [numExtraResults, setNumExtraResults] = useState(0);
 
-    const findNode = (graphData: GraphData, nodeId: string) => {
-        return graphData.nodes.find((node: { id: string }) => node.id === nodeId)
-    }
-
     const searchForNodes = (query: string) => {
         fetch(`/api/search?query=${query}`).then(response => {
             const json = response.json()
@@ -86,23 +82,37 @@ export const DeviceGraph = () => {
             searchForNodes(e)
         }}>
         </SearchInput>
-        {searchResults.length > 0 && <div className={style.SearchResultsWrapper}>
-            <div className={style.SearchResults}>
-                {searchResults.map(node => {
-                    return <div key={node.id} className={style.SearchResult} onClick={
-                        (e: any) => {
-                            e.preventDefault()
-                            router.push(`/devices?id=${node.id}`)
-                        }
-                    }>{node.id} - {node.name}</div>
-                })}
-                {numExtraResults > 0 &&
-                    <div className={style.MoreResults}>
-                        {numExtraResults} more results...
-                    </div>}
-            </div>
-
-        </div>}
+        {searchResults.length > 0 ? <div className={style.SearchResultsWrapper}>
+        <div className="table-responsive">
+            <table className="table table-striped table-hover">
+                <thead>
+                    <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Device Name</th>
+                    <th scope="col">Date Received</th>
+                    <th scope="col">Product Code</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {searchResults.map(node => {
+                        return <tr className={style.tableRow} onClick={
+                            (e: any) => {
+                                e.preventDefault()
+                                router.push(`/devices?id=${node.id}`)
+                            }}>
+                            <th scope="row">{node.id}</th>
+                            <td>{node.name}</td>
+                            <td>{node.date}</td>
+                            <td>{node.product_code}</td>
+                        </tr>
+                    })}
+                </tbody>
+            </table>
+            {numExtraResults > 0 &&
+            <p>
+                {numExtraResults} more results...
+            </p>}
+        </div></div> : <p>No results found.</p>}
     </>
 };
 

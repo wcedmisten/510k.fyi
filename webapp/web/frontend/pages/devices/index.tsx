@@ -42,6 +42,8 @@ const PredicateGraph = ({graphData, selectedNode, setSelectedNode, setSelectedNo
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
 
                 ctx.beginPath();
+                // TODO: make the selected node size proportional to the # of nodes
+                // also use a distinctive color
                 ctx.arc(node.x, node.y, node.id === selectedNode ? 10 : 5, 0, 2 * Math.PI, false);
                 // color by recall status
                 ctx.fillStyle = node.recalls.length > 0 ? "#e62525" : "#a8c2e3";

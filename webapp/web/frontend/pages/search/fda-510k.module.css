@@ -5,52 +5,17 @@
     margin-right: auto;
 }
 
-.InfoSection {
-    margin: auto;
-    margin: 5px;
-    padding: 10px;
-    text-align: center;
-    border: black;
-}
-
-.InfoSection p {
-    margin: 2px;
-}
-
-@media only screen and (max-width: 600px) {
-    .InfoSection {
-        width: 90%;
-    }
-  }
-
 .SearchResultsWrapper {
     display: flex;
     justify-content: center;
+    max-width: 90%;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 10px;
   }
 
-.SearchResults {
-    padding: 10px;
-    text-align: center;
-    display: grid;
-    border: 2px solid black;
-    box-sizing: border-box;
-    max-width: 500px;
-    border-radius: 4px;
-}
 
-.SearchResult {
-    display: inline-block;
-    padding: .5em 1em;
-    background-color: #ccf;
-    border: 1px solid #ababab;
-    color: #000;
-    cursor: pointer;
+.tableRow:hover {
+    cursor: pointer
 }
-
-.MoreResults {
-    display: inline-block;
-    padding: .5em 1em;
-    background-color: rgb(218, 218, 239);
-    border: 1px solid #ababab;
-    color: #000;
-}
+  
