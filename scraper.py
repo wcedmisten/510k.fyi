@@ -121,8 +121,10 @@ visiting_hours_end = 5
 
 print(f"Running on {len(rows)} rows")
 
+TIMEZONE = 'America/New_York'
+
 for device in rows:
-    current_hour = datetime.datetime.now(pytz.timezone('America/New_York')).time().hour
+    current_hour = datetime.datetime.now(pytz.timezone(TIMEZONE)).time().hour
     counter = 0
     
     while current_hour < visiting_hours_start and current_hour > visiting_hours_end:
@@ -131,10 +133,10 @@ for device in rows:
 
         # print every hour
         if counter == 0:
-            print(datetime.datetime.now(pytz.timezone('US/Eastern')).time(), "Still sleeping")
+            print(datetime.datetime.now(pytz.timezone(TIMEZONE)).time(), "Still sleeping")
         counter = (counter + 1) % 60
 
-        current_hour = datetime.datetime.now(pytz.timezone('US/Eastern')).time().hour
+        current_hour = datetime.datetime.now(pytz.timezone(TIMEZONE)).time().hour
 
     print("Downloading " + device[0])
     download_device_pdf(device[0])
