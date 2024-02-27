@@ -102,6 +102,10 @@ export const DeviceGraph = () => {
         }
     }, [selectedNode])
 
+    const numAncestryRecalled = graphData?.nodes.filter((node) => node?.recalls?.length > 0).length
+
+    const ancestryRecalledPercent = Math.round(numAncestryRecalled / graphData.nodes.length * 100)
+
     return <>
         <NavBar></NavBar>
         {searchResults.length > 0 && <div className={style.SearchResultsWrapper}>
@@ -124,18 +128,17 @@ export const DeviceGraph = () => {
 
         </div>}
         <div className={style.InfoSection}>
-            <p>Name: {selectedNodeData?.name}</p>
+            <h1 className={style.DeviceName}>{selectedNodeData?.name}</h1>
             <p>Device ID: <a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPMN/pmn.cfm?ID=${selectedNodeData?.id}`}
                 target="_blank" rel="noopener noreferrer">{selectedNode}</a></p>
             <p>Date Recieved: {selectedNodeData?.date} </p>
-            <p>Product Code: <a href={
+            <p>Product Category: <a href={
                 `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPCD/classification.cfm?id=${selectedNodeData?.product_code}`
             } target="_blank" rel="noopener noreferrer">
-                {selectedNodeData?.product_code}
-            </a>
-            </p>
-            {graphData?.product_descriptions && selectedNodeData &&
-            <p>Generic Name: {graphData?.product_descriptions?.[selectedNodeData?.product_code]}</p>}
+                {graphData?.product_descriptions?.[selectedNodeData?.product_code]}
+            </a></p>
+            {!!graphData.nodes && <p>Number of devices in predicate ancestry: {graphData.nodes.length}</p>}
+            {!!graphData.nodes && <p>Number of recalled devices in ancestry: {numAncestryRecalled} ({ancestryRecalledPercent}%)</p>}
             {selectedNodeData?.recalls && selectedNodeData?.recalls.length > 0 &&
             <p>Recalls: {selectedNodeData?.recalls.map((recall: Recall) => <a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfres/res.cfm?id=${recall.recall_id}`} target="_blank">{recall.reason}</a>)}</p>}
         </div>

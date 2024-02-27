@@ -17,6 +17,11 @@
     margin: 2px;
 }
 
+.DeviceName {
+    font-size: 30px;
+    color: var(--Blue600);
+}
+
 @media only screen and (max-width: 600px) {
     .InfoSection {
         width: 90%;
