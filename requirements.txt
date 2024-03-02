@@ -7,3 +7,6 @@ pdf2image
 graphviz
 progress
 ujson
+
+networkx
+python-Levenshtein
