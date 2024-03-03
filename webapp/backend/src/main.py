@@ -25,7 +25,7 @@ def get_ancestors(device_id):
             """WITH RECURSIVE ancestor(n)
             AS (
                 VALUES(?)
-                UNION ALL
+                UNION
                 SELECT node_from FROM predicate_graph_edge, ancestor
                 WHERE predicate_graph_edge.node_to=ancestor.n
             )
@@ -48,6 +48,10 @@ def get_device_recalls(device_id):
             """,
             [device_id]).fetchall()
 
+
+# "Because the UNION ALL operator does not remove duplicate rows, it runs faster than the UNION operator."
+# DOES NOT APPLY HERE lol
+# query went from ~18s to 0.015s by removing "ALL"
 def get_ancestry_recalls(device_id):
     with sqlite3.connect("./devices.db") as con:
         cur = con.cursor()
@@ -58,7 +62,7 @@ def get_ancestry_recalls(device_id):
                         WITH RECURSIVE ancestor(n)
                         AS (
                             VALUES(?)
-                            UNION ALL
+                            UNION
                             SELECT node_from FROM predicate_graph_edge, ancestor
                             WHERE predicate_graph_edge.node_to=ancestor.n
                         )
@@ -67,7 +71,8 @@ def get_ancestry_recalls(device_id):
                         WHERE predicate_graph_edge.node_to IN ancestor
                     ) ancestry
                     JOIN device ON ancestry.node_from = device.k_number
-                    LEFT JOIN device_recall ON device_recall.k_number = device.k_number LEFT JOIN recall ON device_recall.recall_id = recall.id;
+                    LEFT JOIN device_recall ON device_recall.k_number = device.k_number
+                    LEFT JOIN recall ON device_recall.recall_id = recall.id;
             """,
             [device_id]).fetchall()
 
@@ -126,8 +131,9 @@ async def get_ancestry_graph(device_id):
                 "reason": recall_reason
             })
 
+    ancestry_recalls = get_ancestry_recalls(device_id)
+    for recall in ancestry_recalls:
 
-    for recall in get_ancestry_recalls(device_id):
         # device.k_number, recall_id, recall.reason_for_recall
         k_number = recall[0]
         recall_id = recall[1]
