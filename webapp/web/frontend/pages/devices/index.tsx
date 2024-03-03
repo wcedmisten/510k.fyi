@@ -24,7 +24,7 @@ const PredicateGraph = ({graphData, selectedNode, setSelectedNode, setSelectedNo
     return graphData?.links?.length > 0 ?
         <ForceGraph
             graphData={graphData as any}
-            nodeLabel={(node: any) => `Name: ${node.name}<br>ID: ${node.id}<br>Date: ${node.date}<br>Category: ${node.product_code}<br>Recalls: ${node?.recalls?.length ? node.recalls.map((recall: Recall) => "<br>" + recall.reason) : "None"}`}
+            nodeLabel={(node: any) => `Name: ${node.name}<br>ID: ${node.id}<br>Date: ${node.date}<br>Category: ${node.product_code}<br>Recalls: ${node?.recalls?.length ? node.recalls.map((recall: Recall) => "<br>" + recall.recall_id) : "None"}`}
             // nodeAutoColorBy="product_code"
             linkDirectionalArrowLength={3.5}
             linkDirectionalArrowRelPos={1}
@@ -140,7 +140,7 @@ export const DeviceGraph = () => {
             {!!graphData.nodes && <p>Number of devices in predicate ancestry: {graphData.nodes.length}</p>}
             {!!graphData.nodes && <p>Number of recalled devices in ancestry: {numAncestryRecalled} ({ancestryRecalledPercent}%)</p>}
             {selectedNodeData?.recalls && selectedNodeData?.recalls.length > 0 &&
-            <p>Recalls: {selectedNodeData?.recalls.map((recall: Recall) => <a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfres/res.cfm?id=${recall.recall_id}`} target="_blank">{recall.reason}</a>)}</p>}
+            <p>Recalls: {selectedNodeData?.recalls.map((recall: Recall) => <><a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfres/res.cfm?id=${recall.recall_id}`} target="_blank">{recall.recall_id}</a>{', '}</>)}</p>}
         </div>
 
         {graphData.nodes.length ? <PredicateGraph
