@@ -15,7 +15,7 @@ const findNode = (graphData: GraphData, nodeId: string) => {
     return graphData.nodes.find((node: { id: string }) => node.id === nodeId)
 }
 
-const PredicateGraph = ({graphData, selectedNode, setSelectedNode, setSelectedNodeData} : PredicateGraphProps) => {
+const PredicateGraph = ({ graphData, selectedNode, setSelectedNode, setSelectedNodeData }: PredicateGraphProps) => {
     const handleClick = useCallback((node: any) => {
         setSelectedNode(node.id)
         setSelectedNodeData(findNode(graphData, node.id))
@@ -140,7 +140,10 @@ export const DeviceGraph = () => {
             {!!graphData.nodes && <p>Number of devices in predicate ancestry: {graphData.nodes.length}</p>}
             {!!graphData.nodes && <p>Number of recalled devices in ancestry: {numAncestryRecalled} ({ancestryRecalledPercent}%)</p>}
             {selectedNodeData?.recalls && selectedNodeData?.recalls.length > 0 &&
-            <p>Recalls: {selectedNodeData?.recalls.map((recall: Recall) => <><a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfres/res.cfm?id=${recall.recall_id}`} target="_blank">{recall.recall_id}</a>{', '}</>)}</p>}
+                <p>Recalls: {selectedNodeData?.recalls.map((recall: Recall) => <>
+                    <a key={recall.recall_id} href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfres/res.cfm?id=${recall.recall_id}`} target="_blank">{recall.recall_id}</a>{', '}
+                </>)}
+                </p>}
         </div>
 
         {graphData.nodes.length ? <PredicateGraph
@@ -149,11 +152,11 @@ export const DeviceGraph = () => {
             setSelectedNode={setSelectedNode}
             setSelectedNodeData={setSelectedNodeData}
         /> : <div className={style.LoadingWrapper}>
-        <Spinner animation="border" role="status">
-        <span className="visually-hidden">Loading...</span>
-        </Spinner>
-    </div>}
-      
+            <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>
+        </div>}
+
     </>
 };
 

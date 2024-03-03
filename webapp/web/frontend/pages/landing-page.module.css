@@ -66,6 +66,7 @@
 .answer {
     margin-top: 20px;
     font-size: 22px;
+    font-family: 'Roboto';
 }
 
 .searchInput {
@@ -117,7 +118,7 @@
   white-space: nowrap;
   will-change: box-shadow,transform;
   font-size: 22px;
-  font-family: 'Bitter';
+  font-family: 'Roboto';
   font-weight:700;
 }
 
@@ -133,8 +134,28 @@
 
 .searchButtonWrapper {
     text-align: center;
-    margin-bottom: 100px;
     margin-top: 50px;
+}
+
+.searchSuggestionsWrapper {
+  margin-top: 10px;
+  margin-bottom: 50px;
+  display:flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.exampleButton {
+  all: unset;
+  margin: 20px;
+  font-size: 20px;
+  color: var(--Blue600);
+  font-weight: 500;
+  font-family: 'Roboto';
+}
+
+.exampleButton::before {
+  content: "🔎 ";
 }
 
 @media only screen and (max-width: 600px) {

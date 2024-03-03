@@ -61,8 +61,6 @@ export const DeviceGraph = () => {
 
     const searchParams = useSearchParams()
 
-    const search = searchParams.get('q')
-
     useEffect(() => {if (searchParams.has('q')) {searchForNodes(searchParams.get('q') || "")}}, [searchParams])
 
     return <>
@@ -84,7 +82,7 @@ export const DeviceGraph = () => {
                     </thead>
                     <tbody>
                         {searchResults.map(node => {
-                            return <tr className={style.tableRow} onClick={
+                            return <tr key={node.id} className={style.tableRow} onClick={
                                 (e: any) => {
                                     e.preventDefault()
                                     router.push(`/devices?id=${node.id}`)

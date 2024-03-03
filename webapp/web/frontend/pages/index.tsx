@@ -5,8 +5,22 @@ import { NavBar } from '../components/Navbar';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 
+const ExampleButton = ({queryValue, setQueryValue}: {queryValue: string; setQueryValue: (e: any) => void}) => {
+    const router = useRouter();
+
+    return <button className={style.exampleButton} onClick={
+        (e) => {
+            e.preventDefault()
+            setQueryValue(queryValue)
+            setTimeout(() => {
+                router.push(`/search?q=${queryValue}`)
+              }, 500);
+        }
+    }>{queryValue}</button>
+}
+
 export const LandingPage = () => {
-    const [queryValue, setQueryValue] = useState();
+    const [queryValue, setQueryValue] = useState<string | undefined>();
     const router = useRouter();
     return <>
         <NavBar/>
@@ -21,6 +35,7 @@ export const LandingPage = () => {
                     <div className={style.searchButtonWrapper}>
                         <form>
                             <input className={style.searchInput}
+                                value={queryValue}
                                 onChange={(e) => setQueryValue(e.target.value as any)}
                             />
                             <input
@@ -37,6 +52,17 @@ export const LandingPage = () => {
                 </Col>
             </Row>
             <Row>
+                <Col>
+                    <div className={style.searchSuggestionsWrapper}>
+                        <ExampleButton queryValue='Pregnancy Test' setQueryValue={setQueryValue}/>
+                        <ExampleButton queryValue='X-Ray' setQueryValue={setQueryValue}/>
+                        <ExampleButton queryValue='Bipap A 40' setQueryValue={setQueryValue}/>
+                        <ExampleButton queryValue='Hip Stem' setQueryValue={setQueryValue}/>
+                        <ExampleButton queryValue='Hearing Aid' setQueryValue={setQueryValue}/>
+                    </div>
+                </Col>
+            </Row>
+            <Row className="justify-content-md-center">
                 <Col lg="4" sm="12">
                     <div className={style.questionWrapper}>
                         <b className={style.question}>What is a 510k?</b>
@@ -71,6 +97,17 @@ export const LandingPage = () => {
                         <p className={style.answer}>
                             This website can be used free of charge. All data from the FDA is public domain,
                             and the code for this website is licensed under an open source license.
+                        </p>
+                    </div>
+                </Col>
+                <Col lg="4" sm="12">
+                    <div className={style.questionWrapper}>
+                        <b className={style.question}>What kind of devices can I search for?</b>
+                        <p className={style.answer}>
+                            The 510k program spans a wide array of device types: from hip replacements to latex gloves.
+                            The FDA maintains a list of product types at{' '}
+                            <a target="_blank" href="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPCD/classification.cfm?start_search=1&submission_type_id=&devicename=&productcode=&deviceclass=&thirdparty=&panel=&regulationnumber=&implant_flag=&life_sustain_support_flag=&summary_malfunction_reporting=&sortcolumn=deviceclassdesc&pagenum=500">accessdata.fda.gov</a>.
+                            {' '}
                         </p>
                     </div>
                 </Col>

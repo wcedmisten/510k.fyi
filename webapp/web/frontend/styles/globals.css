@@ -21,3 +21,8 @@
   font-weight: 400;
   font-style: bold;
 }
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Regular.ttf');
+}
