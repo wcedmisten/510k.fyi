@@ -21,13 +21,28 @@
 
 @media only screen and (max-width: 600px) {
   .subTitle {
-      text-align: center;
-      margin-top: 30px;
+    text-align: center;
+    margin-top: 30px;
     margin-bottom: 30px;
   }
 }
 
 .text {
-  font-size: 18px;
+  font-size: 22px;
   font-family: 'Roboto';
+}
+
+.avatar {
+  width: 200px;
+  border-radius: 100px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 50px;
+}
+
+@media only screen and (max-width: 600px) {
+  .avatar {
+    margin-bottom: 30px;
+  }
 }
