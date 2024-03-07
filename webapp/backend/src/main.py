@@ -210,8 +210,9 @@ async def device_search(query):
         rows = cur.execute(
             "SELECT k_number, date_received, device_name, product_code " \
             "FROM device WHERE (k_number LIKE ? OR device_name LIKE ?) " \
+            "ORDER BY date_received DESC",
             # TODO: remove this date filter when we have processed newer predicate PDFs
-            "AND date_received < '2022-08-08' ORDER BY date_received DESC",
+            # "AND date_received < '2022-08-08' ORDER BY date_received DESC",
             ["%" + query + "%", "%" + query + "%"],
         ).fetchall()
 
