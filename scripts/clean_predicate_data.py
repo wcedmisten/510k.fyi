@@ -51,6 +51,19 @@ def delete_date_wrong_edges():
     con.commit()
 
 
+def delete_self_cycles():
+    cur.execute(
+        "SELECT node_from, node_to FROM predicate_graph_edge WHERE node_from = node_to;"
+    )
+    num_self_cycles = len(cur.fetchall())
+
+    cur.execute("DELETE FROM predicate_graph_edge WHERE node_to = node_from;")
+
+    print(f"Deleted {num_self_cycles} self-cycles")
+
+    con.commit()
+
+
 def delete_cycle_edges():
     """Deletes all edges that are in a cycle"""
     cur.execute("SELECT node_from, node_to FROM predicate_graph_edge;")
@@ -116,6 +129,7 @@ def delete_nonexistent():
 
 clean_extra_characters()
 delete_date_wrong_edges()
+delete_self_cycles()
 delete_cycle_edges()
 delete_nonexistent()
 delete_suspiciously_close_edges()
