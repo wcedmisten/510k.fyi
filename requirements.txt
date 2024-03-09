@@ -10,4 +10,4 @@ ujson
 
 networkx
 python-Levenshtein
-matplotlib
+seaborn
