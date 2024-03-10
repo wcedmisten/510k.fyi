@@ -14,14 +14,18 @@
 .SearchResultsWrapper {
     display: flex;
     justify-content: center;
-    max-width: 90%;
+    width: 90%;
     margin-left: 20px;
     margin-right: 20px;
     margin-top: 10px;
-  }
+}
+
+.table {
+    table-layout: fixed;
+    word-wrap: break-word;
+}
 
 
 .tableRow:hover {
     cursor: pointer
 }
-  

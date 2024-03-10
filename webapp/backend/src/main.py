@@ -1,5 +1,6 @@
 from time import sleep
 from fastapi import FastAPI
+
 # import psycopg2
 from pydantic import BaseModel
 import os
@@ -17,6 +18,7 @@ import sqlite3
 # )
 
 # cur = con.cursor()
+
 
 def get_ancestors(device_id):
     with sqlite3.connect("./devices.db") as con:
@@ -36,6 +38,7 @@ def get_ancestors(device_id):
             [device_id],
         ).fetchall()
 
+
 def get_device_recalls(device_id):
     with sqlite3.connect("./devices.db") as con:
         cur = con.cursor()
@@ -46,7 +49,8 @@ def get_device_recalls(device_id):
             LEFT JOIN recall ON device_recall.recall_id = recall.id
             WHERE device_recall.k_number = ?;
             """,
-            [device_id]).fetchall()
+            [device_id],
+        ).fetchall()
 
 
 # "Because the UNION ALL operator does not remove duplicate rows, it runs faster than the UNION operator."
@@ -74,7 +78,9 @@ def get_ancestry_recalls(device_id):
                     LEFT JOIN device_recall ON device_recall.k_number = device.k_number
                     LEFT JOIN recall ON device_recall.recall_id = recall.id;
             """,
-            [device_id]).fetchall()
+            [device_id],
+        ).fetchall()
+
 
 def get_device(device_id):
     with sqlite3.connect("./devices.db") as con:
@@ -109,6 +115,7 @@ def format_node(row):
 def format_edge(row):
     return {"source": row["node_from"], "target": row["node_to"]}
 
+
 async def get_ancestry_graph(device_id):
     ancestors = get_ancestors(device_id)
 
@@ -126,10 +133,9 @@ async def get_ancestry_graph(device_id):
             recalls_map[k_number] = []
 
         if recall_id is not None:
-            recalls_map[k_number].append({
-                "recall_id": recall_id,
-                "reason": recall_reason
-            })
+            recalls_map[k_number].append(
+                {"recall_id": recall_id, "reason": recall_reason}
+            )
 
     ancestry_recalls = get_ancestry_recalls(device_id)
     for recall in ancestry_recalls:
@@ -143,10 +149,9 @@ async def get_ancestry_graph(device_id):
             recalls_map[k_number] = []
 
         if recall_id is not None:
-            recalls_map[k_number].append({
-                "recall_id": recall_id,
-                "reason": recall_reason
-            })
+            recalls_map[k_number].append(
+                {"recall_id": recall_id, "reason": recall_reason}
+            )
 
     device = get_device(device_id)
     res = list(map(format_row, ancestors))
@@ -154,13 +159,15 @@ async def get_ancestry_graph(device_id):
     edges = list(map(format_edge, res))
     nodes = list(map(format_node, res))
 
-    nodes.append({
-        # k_number, date_received, device_name, product_code
-        "id": device[0],
-        "date": device[1],
-        "name": device[2],
-        "product_code": device[3]
-    })
+    nodes.append(
+        {
+            # k_number, date_received, device_name, product_code
+            "id": device[0],
+            "date": device[1],
+            "name": device[2],
+            "product_code": device[3],
+        }
+    )
 
     for node in nodes:
         node["recalls"] = recalls_map.get(node["id"], [])
@@ -195,6 +202,7 @@ async def get_ancestry_graph(device_id):
         "product_descriptions": product_descriptions,
     }
 
+
 def format_row_search(row):
     return {
         "k_number": row[0],
@@ -203,31 +211,50 @@ def format_row_search(row):
         "product_code": row[3],
     }
 
-async def device_search(query):
+
+async def device_search(query, offset, limit):
     rows = []
+    wildcard_query = "%" + query + "%"
+    limit = min(50, limit)
     with sqlite3.connect("./devices.db") as con:
         cur = con.cursor()
         rows = cur.execute(
-            "SELECT k_number, date_received, device_name, product_code " \
-            "FROM device WHERE (k_number LIKE ? OR device_name LIKE ?) " \
-            "ORDER BY date_received DESC",
+            "SELECT k_number, date_received, device_name, product_code "
+            "FROM device WHERE (k_number LIKE ? OR device_name LIKE ?) "
+            "ORDER BY date_received DESC, k_number "
+            "LIMIT ? OFFSET ?",
             # TODO: remove this date filter when we have processed newer predicate PDFs
             # "AND date_received < '2022-08-08' ORDER BY date_received DESC",
-            ["%" + query + "%", "%" + query + "%"],
+            [wildcard_query, wildcard_query, limit, offset],
         ).fetchall()
 
-    return list(map(format_node, map(format_row_search, rows)))
+        count = cur.execute(
+            "SELECT COUNT(*) "
+            "FROM device WHERE (k_number LIKE ? OR device_name LIKE ?)",
+            # TODO: remove this date filter when we have processed newer predicate PDFs
+            # "AND date_received < '2022-08-08' ORDER BY date_received DESC",
+            [wildcard_query, wildcard_query],
+        ).fetchall()[0][0]
+
+    return {
+        "data": list(map(format_node, map(format_row_search, rows))),
+        "total_count": count,
+    }
+
 
 # DB model
 class Test(BaseModel):
     field_1: str
 
+
 app = FastAPI()
 
-@app.get("/ancestry/{device_number}") # , response_model=list[Test]
+
+@app.get("/ancestry/{device_number}")  # , response_model=list[Test]
 async def read_user_details(device_number):
     return await get_ancestry_graph(device_number)
 
+
 @app.get("/search")
-async def put_user_details(query):
-    return await device_search(query)
+async def put_user_details(query, offset: int = 0, limit: int = 10):
+    return await device_search(query, offset, limit)
