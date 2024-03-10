@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import style from './devices.module.css'
 import { NavBar } from "../../components/Navbar";
 import { useSearchParams } from "next/navigation";
-import { Spinner } from "react-bootstrap";
+import { Spinner, Tab, Tabs } from "react-bootstrap";
 
 const ForceGraph = dynamic(() => import('../../components/ForceGraph'), {
     ssr: false,
@@ -64,6 +64,106 @@ const PredicateGraph = ({ graphData, selectedNode, setSelectedNode, setSelectedN
         </div>
 }
 
+const findEdgesTo = (device: string, graphData: any) => {
+    console.log("Looking for edges to ", device)
+    return graphData.links.filter((edge: any) => edge.target === device);
+}
+
+const formatPredicateDataTable = (graphData: any, selectedNode: string) => {
+
+    // run BFS on the graph and put each level into a separate nested array
+    const levels = []
+
+    const visitedNodes = new Set([selectedNode]);
+    // start with all the nodes pointing to the selected node
+    let queue = findEdgesTo(selectedNode, graphData || { edges: [] }).map((edge: any) => edge.source)
+
+    while (queue.length > 0) {
+        // copy the current level then reset it
+        const temp = structuredClone(queue);
+        queue = []
+        const level = temp.map((edge: any) => {
+            const sourceNode = graphData.nodes.find((node: any) => node.id === edge)
+            return {
+                ...sourceNode,
+                level: levels.length + 1
+            }
+        }).filter((node: any) => !visitedNodes.has(node.id))
+
+        temp.forEach((edge: any) => {
+            visitedNodes.add(edge)
+        })
+
+        temp.forEach((edge: any) => {
+            const parentNodes = findEdgesTo(edge, graphData).map((edge: any) => edge.source).filter((node: any) => !visitedNodes.has(node.id))
+            console.log({ parentNodes })
+            queue.push(...parentNodes)
+        })
+
+        levels.push(level)
+    }
+
+    const selectedNodeData = graphData.nodes.find((node: any) => node.id === selectedNode)
+
+    const edgesList = levels.flat();
+
+    return !!selectedNodeData ? [selectedNodeData, ...edgesList] : edgesList;
+}
+
+const PredicateTable = ({ graphData, selectedNode, setSelectedNode, setSelectedNodeData }: PredicateGraphProps) => {
+    const formattedData = formatPredicateDataTable(graphData, selectedNode);
+    console.log({ formattedData })
+    return <div className="table-responsive">
+        <table className="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Date Received</th>
+                    <th scope="col">Degrees Removed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {formattedData.map((row: any) => {
+                    return <tr key={row.id + "|" + row.level} className={row.recalls.length > 0 ? "table-danger" : undefined}>
+                        <td><a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPMN/pmn.cfm?ID=${row.id}`}
+                            target="_blank" rel="noopener noreferrer">{row.id}</a></td>
+                        <td>{row.name}</td>
+                        <td>{row.date}</td>
+                        <td>{!!row.level ? row.level : "Original Device"}</td>
+                    </tr>
+                })}
+            </tbody>
+        </table>
+    </div>
+}
+
+const DeviceInfo = ({ graphData, selectedNode, selectedNodeData }: any) => {
+
+    const numAncestryRecalled = graphData?.nodes.filter((node: any) => node?.recalls?.length > 0).length
+
+    const ancestryRecalledPercent = Math.round(numAncestryRecalled / graphData.nodes.length * 100)
+
+    return <div className={style.InfoSection}>
+        <h1 className={style.DeviceName}>{selectedNodeData?.name}</h1>
+        <p>Device ID: <a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPMN/pmn.cfm?ID=${selectedNodeData?.id}`}
+            target="_blank" rel="noopener noreferrer">{selectedNode}</a></p>
+        <p>Date Recieved: {selectedNodeData?.date} </p>
+        {graphData?.product_descriptions && selectedNodeData && <p>Product Category: <a href={
+            `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPCD/classification.cfm?id=${selectedNodeData?.product_code}`
+        } target="_blank" rel="noopener noreferrer">
+            {graphData?.product_descriptions?.[selectedNodeData?.product_code]}
+        </a></p>}
+        {!!graphData.nodes && <p>Number of devices in predicate ancestry: {graphData.nodes.length}</p>}
+        {!!graphData.nodes && <p>Number of recalled devices in ancestry: {numAncestryRecalled} ({ancestryRecalledPercent}%)</p>}
+        {selectedNodeData?.recalls && selectedNodeData?.recalls.length > 0 &&
+            <p>Recalls: {selectedNodeData?.recalls.map((recall: Recall) => <>
+                <a key={recall.recall_id} href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfres/res.cfm?id=${recall.recall_id}`} target="_blank">{recall.recall_id}</a>{', '}
+            </>)}
+            </p>}
+    </div>
+}
+
 export const DeviceGraph = () => {
     const [graphData, setGraphData] = useState<GraphData & { product_descriptions: any; }>(
         { links: [], nodes: [], product_descriptions: {} }
@@ -102,10 +202,6 @@ export const DeviceGraph = () => {
         }
     }, [selectedNode])
 
-    const numAncestryRecalled = graphData?.nodes.filter((node) => node?.recalls?.length > 0).length
-
-    const ancestryRecalledPercent = Math.round(numAncestryRecalled / graphData.nodes.length * 100)
-
     return <>
         <NavBar></NavBar>
         {searchResults.length > 0 && <div className={style.SearchResultsWrapper}>
@@ -127,35 +223,40 @@ export const DeviceGraph = () => {
             </div>
 
         </div>}
-        <div className={style.InfoSection}>
-            <h1 className={style.DeviceName}>{selectedNodeData?.name}</h1>
-            <p>Device ID: <a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPMN/pmn.cfm?ID=${selectedNodeData?.id}`}
-                target="_blank" rel="noopener noreferrer">{selectedNode}</a></p>
-            <p>Date Recieved: {selectedNodeData?.date} </p>
-            {graphData?.product_descriptions && selectedNodeData && <p>Product Category: <a href={
-                `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPCD/classification.cfm?id=${selectedNodeData?.product_code}`
-            } target="_blank" rel="noopener noreferrer">
-                {graphData?.product_descriptions?.[selectedNodeData?.product_code]}
-            </a></p>}
-            {!!graphData.nodes && <p>Number of devices in predicate ancestry: {graphData.nodes.length}</p>}
-            {!!graphData.nodes && <p>Number of recalled devices in ancestry: {numAncestryRecalled} ({ancestryRecalledPercent}%)</p>}
-            {selectedNodeData?.recalls && selectedNodeData?.recalls.length > 0 &&
-                <p>Recalls: {selectedNodeData?.recalls.map((recall: Recall) => <>
-                    <a key={recall.recall_id} href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfres/res.cfm?id=${recall.recall_id}`} target="_blank">{recall.recall_id}</a>{', '}
-                </>)}
-                </p>}
-        </div>
-
-        {graphData.nodes.length ? <PredicateGraph
-            graphData={graphData}
-            selectedNode={selectedNode}
-            setSelectedNode={setSelectedNode}
-            setSelectedNodeData={setSelectedNodeData}
-        /> : <div className={style.LoadingWrapper}>
-            <Spinner animation="border" role="status">
-                <span className="visually-hidden">Loading...</span>
-            </Spinner>
-        </div>}
+        <Tabs
+            defaultActiveKey="device"
+            id="uncontrolled-tab-example"
+            className="mb-3"
+            fill
+        >
+            <Tab eventKey="device" title="Device Information">
+                <DeviceInfo
+                    graphData={graphData}
+                    selectedNode={selectedNode}
+                    selectedNodeData={selectedNodeData}
+                />
+            </Tab>
+            <Tab eventKey="graph" title="Predicate Ancestry Graph">
+                {graphData.nodes.length ? <PredicateGraph
+                    graphData={graphData}
+                    selectedNode={selectedNode}
+                    setSelectedNode={setSelectedNode}
+                    setSelectedNodeData={setSelectedNodeData}
+                /> : <div className={style.LoadingWrapper}>
+                    <Spinner animation="border" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </Spinner>
+                </div>}
+            </Tab>
+            <Tab eventKey="table" title="Predicate Ancestry Table">
+                <PredicateTable
+                    graphData={graphData}
+                    selectedNode={selectedNode}
+                    setSelectedNode={setSelectedNode}
+                    setSelectedNodeData={setSelectedNodeData}
+                />
+            </Tab>
+        </Tabs>
 
     </>
 };
