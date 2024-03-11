@@ -17,6 +17,19 @@
     margin: 2px;
 }
 
+.DeviceNameWrapper {
+    margin: auto;
+    margin: 5px;
+    padding-bottom: 20px;
+    text-align: center;
+}
+
+@media only screen and (max-width: 600px) {
+    .DeviceNameWrapper {
+        padding-bottom: 0px
+    }
+}
+
 .DeviceName {
     font-size: 30px;
     color: var(--Blue600);
@@ -26,12 +39,12 @@
     .InfoSection {
         width: 90%;
     }
-  }
+}
 
 .SearchResultsWrapper {
     display: flex;
     justify-content: center;
-  }
+}
 
 .SearchResults {
     padding: 10px;

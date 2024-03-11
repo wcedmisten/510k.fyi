@@ -6,6 +6,7 @@ import style from './devices.module.css'
 import { NavBar } from "../../components/Navbar";
 import { useSearchParams } from "next/navigation";
 import { Spinner, Tab, Tabs } from "react-bootstrap";
+import { Diagram3, InfoCircle, FileSpreadsheet } from 'react-bootstrap-icons';
 
 const ForceGraph = dynamic(() => import('../../components/ForceGraph'), {
     ssr: false,
@@ -65,7 +66,6 @@ const PredicateGraph = ({ graphData, selectedNode, setSelectedNode, setSelectedN
 }
 
 const findEdgesTo = (device: string, graphData: any) => {
-    console.log("Looking for edges to ", device)
     return graphData.links.filter((edge: any) => edge.target === device);
 }
 
@@ -82,22 +82,27 @@ const formatPredicateDataTable = (graphData: any, selectedNode: string) => {
         // copy the current level then reset it
         const temp = structuredClone(queue);
         queue = []
-        const level = temp.map((edge: any) => {
-            const sourceNode = graphData.nodes.find((node: any) => node.id === edge)
-            return {
-                ...sourceNode,
-                level: levels.length + 1
-            }
-        }).filter((node: any) => !visitedNodes.has(node.id))
-
+        const level: any[] = []
         temp.forEach((edge: any) => {
+            const sourceNode = graphData.nodes.find((node: any) => node.id === edge)
+            if (!visitedNodes.has(edge)) {
+                level.push({
+                    ...sourceNode,
+                    level: levels.length + 1
+                });
+            }
+
             visitedNodes.add(edge)
         })
 
         temp.forEach((edge: any) => {
             const parentNodes = findEdgesTo(edge, graphData).map((edge: any) => edge.source).filter((node: any) => !visitedNodes.has(node.id))
-            console.log({ parentNodes })
-            queue.push(...parentNodes)
+
+            parentNodes.forEach((node: any) => {
+                if (!visitedNodes.has(node)) {
+                    queue.push(node)
+                }
+            })
         })
 
         levels.push(level)
@@ -112,7 +117,7 @@ const formatPredicateDataTable = (graphData: any, selectedNode: string) => {
 
 const PredicateTable = ({ graphData, selectedNode, setSelectedNode, setSelectedNodeData }: PredicateGraphProps) => {
     const formattedData = formatPredicateDataTable(graphData, selectedNode);
-    console.log({ formattedData })
+
     return <div className="table-responsive">
         <table className="table table-striped table-hover">
             <thead>
@@ -145,7 +150,6 @@ const DeviceInfo = ({ graphData, selectedNode, selectedNodeData }: any) => {
     const ancestryRecalledPercent = Math.round(numAncestryRecalled / graphData.nodes.length * 100)
 
     return <div className={style.InfoSection}>
-        <h1 className={style.DeviceName}>{selectedNodeData?.name}</h1>
         <p>Device ID: <a href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPMN/pmn.cfm?ID=${selectedNodeData?.id}`}
             target="_blank" rel="noopener noreferrer">{selectedNode}</a></p>
         <p>Date Recieved: {selectedNodeData?.date} </p>
@@ -155,7 +159,7 @@ const DeviceInfo = ({ graphData, selectedNode, selectedNodeData }: any) => {
             {graphData?.product_descriptions?.[selectedNodeData?.product_code]}
         </a></p>}
         {!!graphData.nodes && <p>Number of devices in predicate ancestry: {graphData.nodes.length}</p>}
-        {!!graphData.nodes && <p>Number of recalled devices in ancestry: {numAncestryRecalled} ({ancestryRecalledPercent}%)</p>}
+        {!!graphData.nodes && <p>Number of devices in ancestry with a recall: {numAncestryRecalled} ({ancestryRecalledPercent}%)</p>}
         {selectedNodeData?.recalls && selectedNodeData?.recalls.length > 0 &&
             <p>Recalls: {selectedNodeData?.recalls.map((recall: Recall) => <>
                 <a key={recall.recall_id} href={`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfres/res.cfm?id=${recall.recall_id}`} target="_blank">{recall.recall_id}</a>{', '}
@@ -223,20 +227,29 @@ export const DeviceGraph = () => {
             </div>
 
         </div>}
+        <div className={style.DeviceNameWrapper}>
+            <h1 className={style.DeviceName}>{selectedNodeData?.name}</h1>
+        </div>
         <Tabs
             defaultActiveKey="device"
             id="uncontrolled-tab-example"
             className="mb-3"
             fill
         >
-            <Tab eventKey="device" title="Device Information">
+            <Tab eventKey="device"
+                title={<span>Device Information
+                    {' '}<InfoCircle size={16} />
+                </span>}>
                 <DeviceInfo
                     graphData={graphData}
                     selectedNode={selectedNode}
                     selectedNodeData={selectedNodeData}
                 />
             </Tab>
-            <Tab eventKey="graph" title="Predicate Ancestry Graph">
+            <Tab eventKey="graph"
+                title={<span>Predicate Ancestry Graph
+                    {' '}<Diagram3 size={16} />
+                </span>}>
                 {graphData.nodes.length ? <PredicateGraph
                     graphData={graphData}
                     selectedNode={selectedNode}
@@ -248,7 +261,10 @@ export const DeviceGraph = () => {
                     </Spinner>
                 </div>}
             </Tab>
-            <Tab eventKey="table" title="Predicate Ancestry Table">
+            <Tab eventKey="table"
+                title={<span>Predicate Ancestry Table
+                    {' '}<FileSpreadsheet size={16} />
+                </span>}>
                 <PredicateTable
                     graphData={graphData}
                     selectedNode={selectedNode}
