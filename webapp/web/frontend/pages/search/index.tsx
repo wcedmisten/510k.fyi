@@ -103,7 +103,7 @@ export const DeviceGraph = () => {
                     </tbody>
                 </table>
                 {numTotalResults > limit &&
-                    <span>
+                    <span className={style.paginationButtonWrapper}>
                         {<Button
                             disabled={offset === 0}
                             className="btn-secondary"

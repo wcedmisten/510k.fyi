@@ -1,6 +1,6 @@
 .title {
-  text-align:center;
-  font-size: 50px;
+  text-align: center;
+  font-size: 40px;
   color: var(--Blue600);
   margin-top: 50px;
   margin-bottom: 50px;
@@ -30,7 +30,7 @@
 .featuresHeader {
   margin-top: 50px;
   margin-bottom: 50px;
-  text-align:center;
+  text-align: center;
   font-size: 40px;
   color: var(--Blue600);
 }
@@ -38,35 +38,59 @@
 .featuresText {
   margin-top: 50px;
   margin-bottom: 50px;
-  text-align:center;
+  text-align: center;
   font-size: 40px;
   color: var(--Blue600);
+}
+
+.faqSection {
+  background-image: linear-gradient(var(--Blue600), var(--Blue300));
+  /* background-color: var(--Blue500); */
+  padding-bottom: 20px;
+  margin-bottom: 0px;
+}
+
+.faqTitle {
+  text-align: center;
+  font-size: 40px;
+  /* color: var(--Blue600); */
+  color: white;
+  padding-top: 30px;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  font-weight: 500;
+  font-family: 'Bitter';
+}
+
+@media only screen and (max-width: 600px) {
+  .faqTitle {
+    padding-top: 20px;
+    margin-top: 20px;
+  }
 }
 
 .questionWrapper {
   border-width: 2px;
   border-radius: 15px;
   padding: 20px;
-  background-image: radial-gradient(
-    farthest-corner at 60% 0,
-    rgb(211, 242, 247) 0%,
-    #f0eded 100%
-  );
+  background-image: radial-gradient(farthest-corner at 60% 0,
+      rgb(211, 242, 247) 0%,
+      #f0eded 100%);
   margin: 10px;
 }
 
 .question {
-    color: var(--Blue500);
-    font-size: 30px;
-    line-height: 1.2;
-    font-family: 'Bitter-Italic';
-    font-weight: 600;
+  color: var(--Blue500);
+  font-size: 30px;
+  line-height: 1.2;
+  font-family: 'Bitter-Italic';
+  font-weight: 600;
 }
 
 .answer {
-    margin-top: 20px;
-    font-size: 22px;
-    font-family: 'Roboto';
+  margin-top: 20px;
+  font-size: 22px;
+  font-family: 'Roboto';
 }
 
 .searchInput {
@@ -90,11 +114,9 @@
   align-items: center;
   appearance: none;
   /* background-image: radial-gradient(100% 100% at 100% 0, #5adaff 0, #5468ff 100%); */
-  background-image: radial-gradient(
-    farthest-corner at 100% 0,
-    rgb(115, 206, 194) 0%,
-    #5a54c6 100%
-  );
+  background-image: radial-gradient(farthest-corner at 100% 0,
+      rgb(115, 206, 194) 0%,
+      #5a54c6 100%);
   border-radius: 12px;
   border-width: 0;
   box-sizing: border-box;
@@ -111,15 +133,15 @@
   position: relative;
   text-align: left;
   text-decoration: none;
-  transition: box-shadow .15s,transform .15s;
+  transition: box-shadow .15s, transform .15s;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
   white-space: nowrap;
-  will-change: box-shadow,transform;
+  will-change: box-shadow, transform;
   font-size: 22px;
   font-family: 'Roboto';
-  font-weight:700;
+  font-weight: 700;
 }
 
 .searchButton:hover {
@@ -133,16 +155,22 @@
 }
 
 .searchButtonWrapper {
-    text-align: center;
-    margin-top: 50px;
+  text-align: center;
+  margin-top: 50px;
 }
 
 .searchSuggestionsWrapper {
   margin-top: 10px;
   margin-bottom: 50px;
-  display:flex;
+  display: flex;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+@media only screen and (max-width: 600px) {
+  .searchSuggestionsWrapper {
+    margin-bottom: 0px;
+  }
 }
 
 .exampleButton {
@@ -154,14 +182,68 @@
   font-family: 'Roboto';
 }
 
+@media only screen and (max-width: 600px) {
+  .exampleButton {
+    margin: 4px 16px 4px 16px;
+  }
+}
+
 .exampleButton::before {
   content: "🔎 ";
 }
 
 @media only screen and (max-width: 600px) {
-    .searchButtonWrapper {
-        text-align: center;
-        margin-bottom: 50px;
-        margin-top: 20px;
-    }
+  .searchButtonWrapper {
+    text-align: center;
+    margin-bottom: 0px;
+    margin-top: 20px;
+  }
+}
+
+.featuresSection {
+  /* background-image: linear-gradient(var(--Blue600), var(--Blue300));
+  background-color: var(--Blue500); */
+  margin-top: 0px;
+}
+
+.featuresTitle {
+  text-align: center;
+  font-size: 50px;
+  color: var(--Blue600);
+  /* color: white; */
+  padding-top: 30px;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  font-weight: 500;
+  font-family: 'Bitter';
+}
+
+@media only screen and (max-width: 600px) {
+  .featuresTitle {
+    padding-top: 0px;
+    margin-top: 20px;
+  }
+}
+
+.featureWrapper {
+  border-color: var(--Blue600);
+}
+
+.featureScreenshot {
+  max-width: 100%;
+}
+
+@media only screen and (max-width: 600px) {
+  .featureWrapper {
+    margin-bottom: 20px;
+  }
+}
+
+.featureTitle {
+  text-align: center;
+  font-size: 30px;
+  color: var(--Blue600);
+  font-weight: 500;
+  padding-bottom: 10px;
+  /* font-family: 'Bitter'; */
 }
