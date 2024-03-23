@@ -11,3 +11,5 @@ ujson
 networkx
 python-Levenshtein
 seaborn
+
+psycopg2-binary

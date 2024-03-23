@@ -9,4 +9,5 @@ __pycache__
 node_modules
 .next
 webapp/postgres_data
+webapp/import_data
 .env

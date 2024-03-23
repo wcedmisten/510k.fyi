@@ -42,6 +42,7 @@ services:
         restart: always
         volumes:
             - ./backend/src:/backend/app
+            - import-data-volume:/import_data
 
 volumes:
     database-volume:
@@ -50,3 +51,9 @@ volumes:
             type: 'none'
             o: 'bind'
             device: '${PWD}/postgres_data'
+    import-data-volume:
+        driver: local
+        driver_opts:
+            type: 'none'
+            o: 'bind'
+            device: '${PWD}/import_data'

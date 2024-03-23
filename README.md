@@ -14,6 +14,15 @@ sudo apt-get install tesseract-ocr graphviz
 pip3 install -r requirements.txt
 ```
 
+### Make directories
+
+For the webapp, make the following directories
+
+```
+mkdir webapp/postgres_data
+mkdir webapp/import_data
+```
+
 # File sources
 
 Device dataset downloaded from: https://open.fda.gov/apis/device/510k/download/
@@ -38,6 +47,12 @@ python3 db_import.py
 
 Scrape the FDA website and download PDFs for 510(k) summary statements.
 
+Copy to the webapp/import_data directory for webapp use.
+
+```
+cp unzip device-510k-0001-of-0001.json webapp/import_data
+cp unzip device-recall-0001-of-0001.json webapp/import_data
+```
 
 # Problems with the data
 
