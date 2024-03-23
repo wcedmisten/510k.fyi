@@ -1,94 +1,95 @@
-from time import sleep
 from fastapi import FastAPI
 
-# import psycopg2
+import psycopg2
 from pydantic import BaseModel
 import os
 
-import sqlite3
+POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
 
-# POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
-
-# con = psycopg2.connect(
-#     dbname="postgres",
-#     user="postgres",
-#     password=POSTGRES_PASSWORD,
-#     host="database",
-#     port="5432",
-# )
-
-# cur = con.cursor()
+con = psycopg2.connect(
+    dbname="postgres",
+    user="postgres",
+    password=POSTGRES_PASSWORD,
+    host="database",
+    port="5432",
+)
 
 
 def get_ancestors(device_id):
-    with sqlite3.connect("./devices.db") as con:
-        cur = con.cursor()
-        return cur.execute(
-            """WITH RECURSIVE ancestor(n)
-            AS (
-                VALUES(?)
-                UNION
-                SELECT node_from FROM predicate_graph_edge, ancestor
-                WHERE predicate_graph_edge.node_to=ancestor.n
+    with con:
+        with con.cursor() as cur:
+            cur.execute(
+                """WITH RECURSIVE ancestor(n)
+                AS (
+                    VALUES(%s)
+                    UNION
+                    SELECT node_from FROM predicate_graph_edge, ancestor
+                    WHERE predicate_graph_edge.node_to=ancestor.n
+                )
+                SELECT k_number, date_received, generic_name, device_name, product_code, node_to, node_from
+                FROM predicate_graph_edge
+                JOIN device ON node_from = device.k_number
+                WHERE predicate_graph_edge.node_to IN (SELECT n FROM ancestor);""",
+                [device_id],
             )
-            SELECT k_number, date_received, generic_name, device_name, product_code, node_to, node_from
-            FROM predicate_graph_edge
-            JOIN device ON node_from = device.k_number
-            WHERE predicate_graph_edge.node_to IN ancestor;""",
-            [device_id],
-        ).fetchall()
+
+            return cur.fetchall()
 
 
 def get_device_recalls(device_id):
-    with sqlite3.connect("./devices.db") as con:
-        cur = con.cursor()
-        return cur.execute(
-            """
-            SELECT device_recall.k_number, recall_id, recall.reason_for_recall
-            FROM device_recall
-            LEFT JOIN recall ON device_recall.recall_id = recall.id
-            WHERE device_recall.k_number = ?;
-            """,
-            [device_id],
-        ).fetchall()
+    with con:
+        with con.cursor() as cur:
+            cur.execute(
+                """
+                SELECT device_recall.k_number, recall_id, recall.reason_for_recall
+                FROM device_recall
+                LEFT JOIN recall ON device_recall.recall_id = recall.id
+                WHERE device_recall.k_number = %s;
+                """,
+                [device_id],
+            )
+            return cur.fetchall()
 
 
 # "Because the UNION ALL operator does not remove duplicate rows, it runs faster than the UNION operator."
 # DOES NOT APPLY HERE lol
 # query went from ~18s to 0.015s by removing "ALL"
 def get_ancestry_recalls(device_id):
-    with sqlite3.connect("./devices.db") as con:
-        cur = con.cursor()
-        return cur.execute(
-            """
-            SELECT device.k_number, recall_id, recall.reason_for_recall
-                    FROM (
-                        WITH RECURSIVE ancestor(n)
-                        AS (
-                            VALUES(?)
-                            UNION
-                            SELECT node_from FROM predicate_graph_edge, ancestor
-                            WHERE predicate_graph_edge.node_to=ancestor.n
-                        )
-                        SELECT node_to, node_from
-                        FROM predicate_graph_edge
-                        WHERE predicate_graph_edge.node_to IN ancestor
-                    ) ancestry
-                    JOIN device ON ancestry.node_from = device.k_number
-                    LEFT JOIN device_recall ON device_recall.k_number = device.k_number
-                    LEFT JOIN recall ON device_recall.recall_id = recall.id;
-            """,
-            [device_id],
-        ).fetchall()
+    with con:
+        with con.cursor() as cur:
+            cur.execute(
+                """
+                SELECT device.k_number, recall_id, recall.reason_for_recall
+                        FROM (
+                            WITH RECURSIVE ancestor(n)
+                            AS (
+                                VALUES(%s)
+                                UNION
+                                SELECT node_from FROM predicate_graph_edge, ancestor
+                                WHERE predicate_graph_edge.node_to=ancestor.n
+                            )
+                            SELECT node_to, node_from
+                            FROM predicate_graph_edge
+                            WHERE predicate_graph_edge.node_to IN (SELECT n FROM ancestor)
+                        ) ancestry
+                        JOIN device ON ancestry.node_from = device.k_number
+                        LEFT JOIN device_recall ON device_recall.k_number = device.k_number
+                        LEFT JOIN recall ON device_recall.recall_id = recall.id;
+                """,
+                [device_id],
+            )
+            return cur.fetchall()
 
 
 def get_device(device_id):
-    with sqlite3.connect("./devices.db") as con:
-        cur = con.cursor()
-        return cur.execute(
-            """SELECT k_number, date_received, device_name, product_code FROM device WHERE k_number = ?""",
-            [device_id],
-        ).fetchall()[0]
+    with con:
+        with con.cursor() as cur:
+            cur.execute(
+                """SELECT k_number, date_received, device_name, product_code FROM device WHERE k_number = %s""",
+                [device_id],
+            )
+
+            return cur.fetchall()[0]
 
 
 def format_row(row):
@@ -216,25 +217,24 @@ async def device_search(query, offset, limit):
     rows = []
     wildcard_query = "%" + query + "%"
     limit = min(50, limit)
-    with sqlite3.connect("./devices.db") as con:
-        cur = con.cursor()
-        rows = cur.execute(
-            "SELECT k_number, date_received, device_name, product_code "
-            "FROM device WHERE (k_number LIKE ? OR device_name LIKE ?) "
-            "ORDER BY date_received DESC, k_number "
-            "LIMIT ? OFFSET ?",
-            # TODO: remove this date filter when we have processed newer predicate PDFs
-            # "AND date_received < '2022-08-08' ORDER BY date_received DESC",
-            [wildcard_query, wildcard_query, limit, offset],
-        ).fetchall()
+    with con:
+        with con.cursor() as cur:
+            cur.execute(
+                "SELECT k_number, date_received, device_name, product_code "
+                "FROM device WHERE (k_number ILIKE %s OR device_name ILIKE %s) "
+                "ORDER BY date_received DESC, k_number "
+                "LIMIT %s OFFSET %s",
+                [wildcard_query, wildcard_query, limit, offset],
+            )
+            rows = cur.fetchall()
 
-        count = cur.execute(
-            "SELECT COUNT(*) "
-            "FROM device WHERE (k_number LIKE ? OR device_name LIKE ?)",
-            # TODO: remove this date filter when we have processed newer predicate PDFs
-            # "AND date_received < '2022-08-08' ORDER BY date_received DESC",
-            [wildcard_query, wildcard_query],
-        ).fetchall()[0][0]
+            cur.execute(
+                "SELECT COUNT(*) "
+                "FROM device WHERE (k_number ILIKE %s OR device_name ILIKE %s)",
+                [wildcard_query, wildcard_query],
+            )
+
+            count = cur.fetchall()[0][0]
 
     return {
         "data": list(map(format_node, map(format_row_search, rows))),
