@@ -1,4 +1,5 @@
 import ujson as json
+import ijson
 import uuid
 import os
 
@@ -20,11 +21,11 @@ cur = con.cursor()
 def import_devices():
     print("Reading 510(k) JSON file")
     with open("/import_data/device-510k-0001-of-0001.json") as f:
-        data = json.load(f)
+        results = ijson.items(f, "results.item")
 
-        print(f"Importing 510k data to database. {len(data['results'])} results.")
+        print(f"Importing 510k data to database.")
 
-        for device in data["results"]:
+        for device in results:
             # skip the DE NOVO devices
             if "DEN" not in device.get("k_number"):
                 vals = (
@@ -54,11 +55,11 @@ def import_devices():
 def import_recalls():
     print("Reading recalls JSON file")
     with open("/import_data/device-recall-0001-of-0001.json") as f:
-        data = json.load(f)
+        results = ijson.items(f, "results.item")
 
-        print(f"Importing recall data to database. {len(data['results'])} results.")
+        print(f"Importing recall data to database.")
 
-        for recall in data["results"]:
+        for recall in results:
             id = recall.get("cfres_id")
             if not id:
                 id = str(uuid.uuid4())
