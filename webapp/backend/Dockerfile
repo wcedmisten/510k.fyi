@@ -7,7 +7,6 @@ COPY ./requirements.txt /backend/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /backend/requirements.txt
 
 COPY ./src /backend/app
-COPY ./devices.db /backend/devices.db
 
 # TODO: upgrade this to a production command
 # https://www.uvicorn.org/deployment/#gunicorn
