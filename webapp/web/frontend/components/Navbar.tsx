@@ -43,20 +43,20 @@ export const NavBar = () => {
     //             </Navbar.Collapse>
     //     </Container>
 
-        const [expanded, setExpanded] = useState(false);
+    const [expanded, setExpanded] = useState(false);
 
     return (
         <Navbar className={style.Navbar} expand="lg" expanded={expanded}>
             <Container>
                 <Navbar.Brand href="/"><span ></span>
-                <div className={style.wrapper}>
-                    <div className={style.logo} >
-                        <img src="/logo.png" width={50}></img>
+                    <div className={style.wrapper}>
+                        <div className={style.logo} >
+                            <img src="/logo.png" width={50}></img>
+                        </div>
+                        <span className={style.title}>
+                            510k.fyi
+                        </span>
                     </div>
-                    <span className={style.title}>
-                        510k.fyi
-                    </span>
-                </div>
                 </Navbar.Brand>
                 <Navbar.Toggle
                     onClick={() => setExpanded(!expanded)}
@@ -66,6 +66,7 @@ export const NavBar = () => {
                         <Nav activeKey="/" onSelect={() => setExpanded(false)}>
                             <Navbar.Brand href="/search"><p className={style.search}>Search</p></Navbar.Brand>
                             <Navbar.Brand href="/about"><p className={style.about}>About</p></Navbar.Brand>
+                            <Navbar.Brand href="/feedback"><p className={style.about}>Feedback</p></Navbar.Brand>
                         </Nav>
                     </div>
                 </Navbar.Collapse>

@@ -43,6 +43,7 @@ migrations = [
     "PRIMARY KEY(node_from, node_to));",
     "CREATE EXTENSION IF NOT EXISTS pg_trgm;",
     "CREATE INDEX IF NOT EXISTS device_name_trgm_idx ON device USING gin (device_name gin_trgm_ops);",
+    "CREATE TABLE IF NOT EXISTS feedback(id uuid DEFAULT gen_random_uuid(), name TEXT, email TEXT, message TEXT)",
 ]
 
 

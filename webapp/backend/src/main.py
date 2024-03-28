@@ -3,6 +3,11 @@ from fastapi import FastAPI
 import psycopg2
 from pydantic import BaseModel
 import os
+import uuid
+import psycopg2.extras
+
+# fixes psycopg2.ProgrammingError: can't adapt type 'UUID'
+psycopg2.extras.register_uuid()
 
 POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
 
@@ -254,6 +259,20 @@ async def device_search(query, offset, limit):
     }
 
 
+def store_feedback(feedback):
+    with con:
+        with con.cursor() as cur:
+            cur.execute(
+                "INSERT INTO feedback VALUES (%s, %s, %s, %s)",
+                [
+                    uuid.uuid4(),
+                    feedback.name,
+                    feedback.email,
+                    feedback.message,
+                ],
+            )
+
+
 # DB model
 class Test(BaseModel):
     field_1: str
@@ -270,3 +289,15 @@ async def read_user_details(device_number):
 @app.get("/search")
 async def put_user_details(query, offset: int = 0, limit: int = 10):
     return await device_search(query, offset, limit)
+
+
+class Feedback(BaseModel):
+    name: str | None = None
+    email: str | None = None
+    message: str
+
+
+@app.post("/submit_feedback")
+async def submit_feedback(feedback: Feedback):
+    store_feedback(feedback)
+    return {"message": "success"}
