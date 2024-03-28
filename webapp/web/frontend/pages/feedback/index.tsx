@@ -8,8 +8,10 @@ function handleSubmit(event: any) {
     const formData = new FormData(event.currentTarget);
     event.preventDefault();
 
-    let data = {}
-    for (let [key, value] of formData.entries()) {
+    let data: {
+        [key: string]: string
+    } = {}
+    for (let [key, value] of formData.entries() as any) {
         data[key] = value;
     }
 
