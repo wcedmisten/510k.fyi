@@ -117,3 +117,8 @@ def import_predicates():
                 print(e)
                 print((predicate, device))
                 con.rollback()
+
+
+import_devices()
+import_recalls()
+import_predicates()

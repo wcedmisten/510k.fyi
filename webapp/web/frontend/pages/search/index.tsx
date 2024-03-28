@@ -7,6 +7,8 @@ import { NavBar } from "../../components/Navbar";
 import { useRouter } from "next/router";
 import { Button } from "react-bootstrap";
 
+import Spinner from 'react-bootstrap/Spinner';
+
 const SearchInput = ({ onInputChange }: { onInputChange: (e: any) => void }) => {
     const [searchInput, setSearchInput] = useState("")
 
@@ -15,7 +17,7 @@ const SearchInput = ({ onInputChange }: { onInputChange: (e: any) => void }) => 
             if (searchInput !== "") {
                 onInputChange(searchInput)
             }
-        }, 400)
+        }, 1000)
 
         return () => clearTimeout(getData)
     }, [searchInput])
@@ -42,10 +44,12 @@ export const DeviceGraph = () => {
 
     const [searchValue, setSearchValue] = useState<string | undefined>()
     const [searchResults, setSearchResults] = useState<NodeData[]>([])
+    const [isLoading, setIsLoading] = useState(false);
 
     const [numTotalResults, setNumTotalResults] = useState(0);
 
     const searchForNodes = (query: string, offset: number, limit: number) => {
+        setIsLoading(true);
         fetch(`/api/search?query=${query}&offset=${offset}&limit=${limit}`).then(response => {
             const json = response.json()
 
@@ -53,9 +57,11 @@ export const DeviceGraph = () => {
         }).then(data => {
             setSearchResults(data.data)
             setNumTotalResults(data["total_count"])
+            setIsLoading(false);
         }).catch(err => {
             // Do something for an error here
             console.log("Error Reading data " + err);
+            setIsLoading(false);
         });
     }
 
@@ -76,6 +82,13 @@ export const DeviceGraph = () => {
             searchForNodes(e, offset, limit)
         }}>
         </SearchInput>
+
+        {isLoading && <div className={style.SearchResultsWrapper}>
+            <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>
+        </div>}
+
         <div className={style.SearchResultsWrapper}> {searchResults.length > 0 ?
             <div className="table-responsive">
                 <table className="table table-striped table-hover">
@@ -124,7 +137,7 @@ export const DeviceGraph = () => {
                             }}>Next
                         </Button>}
                     </span>}
-            </div> : searchParams.has('q') && <p>No results found.</p>}
+            </div> : searchParams.has('q') && !isLoading && <p>No results found.</p>}
         </div>
     </>
 };

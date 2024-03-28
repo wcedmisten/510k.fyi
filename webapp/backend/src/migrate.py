@@ -1,8 +1,6 @@
 import os
 import psycopg2
 
-from db_import import import_devices, import_recalls, import_predicates
-
 POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
 
 con = psycopg2.connect(
@@ -43,6 +41,8 @@ migrations = [
     "FOREIGN KEY(node_from) REFERENCES device(k_number),"
     "FOREIGN KEY(node_to) REFERENCES device(k_number),"
     "PRIMARY KEY(node_from, node_to));",
+    "CREATE EXTENSION IF NOT EXISTS pg_trgm;",
+    "CREATE INDEX IF NOT EXISTS device_name_trgm_idx ON device USING gin (device_name gin_trgm_ops);",
 ]
 
 
@@ -51,7 +51,3 @@ for script in migrations:
 con.commit()
 
 print("Executed ", len(migrations), " migrations")
-
-import_devices()
-import_recalls()
-import_predicates()

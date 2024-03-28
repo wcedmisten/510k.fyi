@@ -221,17 +221,29 @@ async def device_search(query, offset, limit):
         with con.cursor() as cur:
             cur.execute(
                 "SELECT k_number, date_received, device_name, product_code "
-                "FROM device WHERE (k_number ILIKE %s OR device_name ILIKE %s) "
-                "ORDER BY date_received DESC, k_number "
+                "FROM device WHERE (k_number ILIKE %s OR (device_name ILIKE %s) OR similarity(device_name, %s) > 0.3) "
+                "ORDER BY (k_number ILIKE %s) DESC, "
+                "(device_name ILIKE %s) DESC, "
+                "similarity(device_name, %s) DESC, "
+                "date_received DESC "
                 "LIMIT %s OFFSET %s",
-                [wildcard_query, wildcard_query, limit, offset],
+                [
+                    wildcard_query,
+                    wildcard_query,
+                    wildcard_query,
+                    wildcard_query,
+                    wildcard_query,
+                    wildcard_query,
+                    limit,
+                    offset,
+                ],
             )
             rows = cur.fetchall()
 
             cur.execute(
                 "SELECT COUNT(*) "
-                "FROM device WHERE (k_number ILIKE %s OR device_name ILIKE %s)",
-                [wildcard_query, wildcard_query],
+                "FROM device WHERE (k_number ILIKE %s OR (device_name ILIKE %s) OR  similarity(device_name, %s) > 0.3);",
+                [wildcard_query, wildcard_query, wildcard_query],
             )
 
             count = cur.fetchall()[0][0]
