@@ -33,7 +33,7 @@ const Layout: React.FC<LayoutProps> = ({
             <meta property="og:image" content={opengraph?.image || defaultMeta.image} />
             <meta property="og:description" content={opengraph?.description || defaultMeta.description} />
             <link rel="icon" href="/favicon.ico" />
-            <script defer data-domain="510k.fyi" src="http://plausible.wcedmisten.dev/js/script.js"></script>
+            <script defer data-domain="510k.fyi" src="http://zlfieuwrjks.wcedmisten.dev/js/script.js"></script>
         </Head>
         <main>{children}</main>
     </>
