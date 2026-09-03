@@ -131,3 +131,10 @@ of the PDF you're looking at, it can't be used (because they cannot have conside
 Sometimes an applicant will be an individual working at a company, or may be the company itself.
 Sometimes the company name doesn't match the PDF, because there was an acquisition or merger.
 Generally I just go by the trade name of the device, rather than requiring the applicant to match 100%.
+
+
+# License
+
+The code in this repo is licensed as AGPLv3.
+However, the data (e.g. csv files) are licensed as [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.en).
+If you use this work, please provide clear attribution. Thanks!
