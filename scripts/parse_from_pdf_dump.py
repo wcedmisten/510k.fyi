@@ -182,14 +182,12 @@ def find_predicate_ids(device_id):
     print("predicates: ", predicates)
     return predicates
 
-res = cur.execute("SELECT k_number FROM device WHERE k_number NOT LIKE 'DEN%' AND statement_or_summary = 'Summary' AND k_number='K190626' ORDER BY date_received DESC;")
+res = cur.execute("SELECT k_number FROM device WHERE k_number NOT LIKE 'DEN%' AND statement_or_summary = 'Summary' ORDER BY date_received DESC;")
 rows = res.fetchall()
 count = 0
 for device_id in [row[0] for row in rows]:
     print(device_id)
-    
-    if device_id != "K190626":
-        continue
+
     # skip the non-OCR files
     # if os.path.isfile(f"{PATH_TO_PDFS}/{device_id}.pdf.txt"):
     #     continue
